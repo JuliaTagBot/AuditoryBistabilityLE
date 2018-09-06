@@ -52,7 +52,8 @@ function rplot(C::CoherenceComponent{M,T,3} where {M,T};λ_digits=:automatic,
 
   df = DataFrame(value = vec(C),
                  time = vec(ustrip.(uconvert.(s,times(C)[at(1)]))),
-                 scale = vec(round.(ustrip.(uconvert.(cycoct,scales(C)[at(2)])),2)),
+                 scale = vec(round.(ustrip.(uconvert.(cycoct,scales(C)[at(2)])),
+                                    digits=2)),
                  freq_bin = vec(at(3)))
 
   fbreaks,findices = freq_ticks(C)
@@ -86,7 +87,8 @@ function rplot(C::Coherence{M,T,4} where {M,T};λ_digits=:automatic,
 
   df = DataFrame(value = vec(C),
                  time = vec(ustrip.(uconvert.(s,times(C)[at(1)]))),
-                 scale = vec(round.(ustrip.(uconvert.(cycoct,scales(C)[at(2)])),2)),
+                 scale = vec(round.(ustrip.(uconvert.(cycoct,scales(C)[at(2)])),
+                                    digits=2)),
                  freq_bin = vec(at(3)),
                  component = vec(at(4)),
                  component_title = rowtitle.(vec(at(4))))
@@ -122,7 +124,8 @@ function rplot(S::SourceTracking;λ_digits=:automatic,
 
   df = DataFrame(value = vec(S),
                  time = vec(ustrip.(uconvert.(s,times(S)[at(4)]))),
-                 scale = vec(round.(ustrip.(uconvert.(cycoct,scales(S)[at(1)])),2)),
+                 scale = vec(round.(ustrip.(uconvert.(cycoct,scales(S)[at(1)])),
+                                    digits=2)),
                  freq_bin = vec(at(2)),
                  component = vec(at(3)),
                  component_title = rowtitle.(vec(at(3))))
