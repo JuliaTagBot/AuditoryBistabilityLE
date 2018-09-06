@@ -86,17 +86,17 @@ function apply_bistable!(x,condition,params;
                          interactive=false,
                          intermediate_results=interactive,
                          progressbar=interactive)
-  if !(params[:condition] == condition ||
-       ((params[:condition] == :scales_track) && (condition ∈ [:scales,:track])))
-    return (result=x,)
+
+  if condition == :freqs
+    remove_key_prefix!("f_",params)
+  elseif condition == :scales
+    remove_key_prefix!("s_",params)
+  elseif condition == :track
+    remove_key_prefix!("t_",params)
   end
 
-  if params[:condition] == :scales_track
-    if condition == :scales
-      remove_key_prefix!("s_",params)
-    elseif condition == :track
-      remove_key_prefix!("t_",params)
-    end
+  if iszero(params[:c_a]) && iszero(params[:c_m]) && iszero(params[:c_σ])
+    return (result=x,)
   end
 
   noise_params = Dict(
