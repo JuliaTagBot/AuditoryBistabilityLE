@@ -122,14 +122,7 @@ function apply_bistable!(x,condition,params;
   wna_low = filt!(similar(wna),low,wna)
 
   # shouldn't the below instead be replaced with:
-  #     x .*= wna_low./weights
-  # NOTE: I think this may only makes sense for the scale level analysis
-  # ????
-  if eltype(x) <: Complex
-    x .= sqrt.(abs.(x) .* max.(0.0,wna_low)) .* exp.(angle.(x).*im)
-  else
-    x .*= wna_low
-  end
+  x .*= wna_low./weights
 
   if intermediate_results
     (result=x,inweights=input_weights,outweights=wna_low,adapt=a,inhibit=m)
