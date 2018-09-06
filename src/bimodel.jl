@@ -20,22 +20,17 @@ function bistable_model(stim::AbstractArray,params,settings;interactive=false,
                         progressbar=interactive,
                         intermediate_results=interactive)
   settings = read_settings(settings)
-  @assert params[:condition] ∈ [:freqs,:scales,:track,:none,:scales_track]
 
   # auditory spectrogram
-  # TODO: configure framelength
-  spect = audiospect(stim,progressbar=progressbar;
-                     settings.freqs.analyze...)
+  spect = audiospect(stim,progressbar=progressbar; settings.freqs.analyze...)
   spectat = apply_bistable(spect,:freqs,params,progressbar=progressbar,
                            intermediate_results=intermediate_results;
                            settings.freqs.bistable...)
   specta = spectat.result
 
   # cortical scales
-  cs = cortical(specta, progressbar=progressbar;
-                settings.scales.analyze...)
-  csclean = cortical(spect, progressbar=progressbar;
-                     settings.scales.analyze...)
+  cs = cortical(specta, progressbar=progressbar; settings.scales.analyze...)
+  csclean = cortical(spect, progressbar=progressbar; settings.scales.analyze...)
   csat = apply_bistable(cs,:scales,params,progressbar=progressbar,
                         intermediate_results=intermediate_results;
                         settings.scales.bistable...)
