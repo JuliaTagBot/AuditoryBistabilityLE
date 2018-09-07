@@ -61,14 +61,21 @@ function meanabs(A,n)
   dropdims(result,dims=n)
 end
 
-function findweights(condition,x)
-  if condition == :scales
+function findweights(condition,x,normalize_start)
+  weights = if condition == :scales
     AxisArray(meanabs(x,axisdim(x,Axis{:freq})) .*
               ustrip.(uconvert.(cycoct,ShammaModel.scales(x)))',
               AxisArrays.axes(x,Axis{:time}), AxisArrays.axes(x,Axis{:scale}))
   elseif condition ∈ [:freqs,:track]
     x
   end
+
+  if normalize_start > 0s
+    after_buildup = normalize_start .. last(times(weights))
+    weights .-= minimum(weights[after_buildup])
+    weights ./= maximum(weights[after_buildup])
+  end
+  weights
 end
 
 function remove_key_prefix!(prefix,dict)
@@ -85,6 +92,8 @@ function apply_bistable!(x,condition,params;
                          lowpass=1.5,lowpass_order=3,
                          interactive=false,
                          intermediate_results=interactive,
+                         normalize_start_s=-1.0,
+                         normalize_start=normalize_start_s*s,
                          progressbar=interactive)
 
   if condition == :freqs
@@ -108,7 +117,7 @@ function apply_bistable!(x,condition,params;
     :c_x => params[:c_x], :τ_x => params[:τ_x]
   )
 
-  weights = findweights(condition,x)
+  weights = findweights(condition,x,normalize_start)
   weights .= bound.(weights,input_bound...)
   input_weights = copy(weights)
 

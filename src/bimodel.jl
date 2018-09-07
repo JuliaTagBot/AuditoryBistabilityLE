@@ -47,19 +47,11 @@ function bistable_model(stim::AbstractArray,params,settings;interactive=false,
   tracks,track_lp = track(C, method=:multi_prior, progressbar=progressbar;
                           settings.track.analyze...)
 
-  if params[:condition] == :track || params[:condition] == :scales_track
-    after_buildup = settings.track.buildup_time_s*s .. last(times(C))
-    track_lp .-= minimum(track_lp[after_buildup])
-    track_lp ./= maximum(track_lp[after_buildup])
-
-    track_lp_at = apply_bistable(track_lp,:track,params,
-                              progressbar=progressbar,
-                              intermediate_results=intermediate_results;
-                              settings.track.bistable...)
-    track_lp = track_lp_at.result
-  else
-    track_lp_at = (result=track_lp,)
-  end
+  track_lp_at = apply_bistable(track_lp,:track,params,
+                               progressbar=progressbar,
+                               intermediate_results=intermediate_results;
+                               settings.track.bistable...)
+  track_lp = track_lp_at.result
 
   # decision making
   sratio = component_ratio(
