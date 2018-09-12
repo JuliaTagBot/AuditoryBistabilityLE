@@ -31,7 +31,7 @@ end
 
 function interpolate_times(x,times::AbstractVector,to::AbstractVector)
   @assert length(x) == length(times)
-  y = Array{eltype(x)}(undef,length(to))
+  y = Array{float(eltype(x))}(undef,length(to))
   x1 = 1
   for i in eachindex(y)
     while x1 <= length(times) && times[x1] < to[i]; x1+=1; end
