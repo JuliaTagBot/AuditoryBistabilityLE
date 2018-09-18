@@ -62,7 +62,7 @@ function bistable_model(stim::AbstractArray,params,settings;interactive=false,
   )
 
   startHz, stopHz = settings.rates.freq_limits_Hz.*Hz
-  bratio = component_bandwidth_ratio(
+  bratio, mask = component_bandwidth_ratio(
     csclean[:,:,startHz .. stopHz],
     tracks,track_lp,
     window=settings.percept_lengths.window_ms.*ms,
@@ -79,10 +79,11 @@ function bistable_model(stim::AbstractArray,params,settings;interactive=false,
                            settings.percept_lengths.min_length_ms.*ms)
 
   if intermediate_results
-    (percepts=(counts=counts,sratio=sratio,bratio=bratio),
+    (primary_source=mask,
+     percepts=(counts=counts,sratio=sratio,bratio=bratio),
      sources=merge((tracks=tracks,),track_lp_at),
      cohere=C,
-     cortical=csat,
+     cortical=merge((clean=csclean[:,:,startHz .. stopHz],),csat),
      spect=spectat)
   else
     (percepts=(counts=counts,sratio=sratio,bratio=bratio),)

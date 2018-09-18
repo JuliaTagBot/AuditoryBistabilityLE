@@ -32,11 +32,29 @@ end
 
 function estimate_bandwidth(sp;threshold=0.25,window=500ms,step=250ms)
   map_windowing(sp,length=window,step=step) do window
-    means = dropdims(mean(window,dims=1),dims=1)
-    peak = maximum(means)
-    over = findall(means .> threshold*peak)
+    levels = dropdims(mapslices(mean,Array(window),dims=1),dims=1)
+    peak = maximum(levels)
+    over = findall(levels .> threshold*peak)
     maximum(over) - minimum(over) + 1
   end
+end
+
+function component_bandwidths(cs,tracks,tracks_lp;min_length=1s,
+                                   threshold=0.25,
+                                   progressbar=false,window=500ms,
+                                   step=250ms)
+  crmask = mask(cs,tracks,tracks_lp,window=window,step=step)
+  spmask = audiospect(crmask,progressbar=progressbar)
+  sp = audiospect(cs,progressbar=progressbar)
+
+  fullband = estimate_bandwidth(sp,window=window,step=step,
+                                threshold=threshold)
+  maskband = estimate_bandwidth(spmask,window=window,step=step,
+                                threshold=threshold)
+
+  (AxisArray(maskband,AxisArrays.axes(fullband,Axis{:time})),
+   AxisArray(fullband,AxisArrays.axes(fullband,Axis{:time})))
+
 end
 
 function component_bandwidth_ratio(cs,tracks,tracks_lp;min_length=1s,
@@ -48,11 +66,12 @@ function component_bandwidth_ratio(cs,tracks,tracks_lp;min_length=1s,
   sp = audiospect(cs,progressbar=progressbar)
 
   fullband = estimate_bandwidth(sp,window=window,step=step,
-                               threshold=threshold)
+                                threshold=threshold)
   maskband = estimate_bandwidth(spmask,window=window,step=step,
-                               threshold=threshold)
+                                threshold=threshold)
 
-  AxisArray(maskband ./ fullband,AxisArrays.axes(fullband,Axis{:time}))
+  AxisArray(maskband ./ fullband,AxisArrays.axes(fullband,Axis{:time})),
+    spmask
 end
 
 function meanabs(A,n)
