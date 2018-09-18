@@ -1,4 +1,4 @@
-using RCall
+using .RCall
 import ShammaModel: rplot, raster_plot
 export rplot, scale_plot, cohere_plot
 R"library(ggplot2)"
