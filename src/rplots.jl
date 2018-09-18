@@ -1,6 +1,6 @@
 using RCall
 import ShammaModel: rplot, raster_plot
-export rplot, scale_plot
+export rplot, scale_plot, cohere_plot
 R"library(ggplot2)"
 
 function titlefn(λ,λ_digits,components)
@@ -39,6 +39,31 @@ function findnear(x,nearby)
   else
     x[indices], indices
   end
+end
+
+function cohere_plot(slice::AxisArray{T,3} where T; kwds...)
+  @assert axisdim(slice,Axis{:scale}) == 1
+  @assert axisdim(slice,Axis{:freq}) == 2
+  @assert axisdim(slice,Axis{:component}) == 3
+
+  ii = CartesianIndices(size(slice))
+  at(i) = map(ii -> ii[i],ii)
+
+  df = DataFrame(value = vec(slice),
+                 scale = vec(round.(ustrip.(uconvert.(cycoct,
+                                                      scales(slice)[at(1)])),
+                                    digits=2)),
+                 freq_bin = vec(at(2)),
+                 component = vec(at(3)))
+
+  fbreaks,findices = freq_ticks(slice)
+  p = raster_plot(df;value=:value,x=:scale,y=:freq_bin,kwds...)
+
+R"""
+  $p + facet_grid(component~.) + #ordered_scales(scale)) +
+    scale_y_continuous(breaks=$findices,labels=$fbreaks) +
+    ylab('Frequency (Hz)') + xlab('Time (s)')
+"""
 end
 
 function rplot(C::CoherenceComponent{M,T,3} where {M,T};λ_digits=:automatic,
