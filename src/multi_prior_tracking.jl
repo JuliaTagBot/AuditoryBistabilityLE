@@ -6,6 +6,8 @@ export map_components
   source_priors::AxisArray
   freq_prior
   max_sources::Int = 4
+  min_norm::Float64 = Inf
+  normalize::Bool = false
 end
 function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
                   time_constants=time_constants_s*s,
@@ -15,7 +17,9 @@ function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
                   freq_prior=nothing,
                   ridge_threshold=0.05,
                   freq_prior_N = 2, freq_prior_bias = 0,
+                  normalize=false,min_norm=Inf,
                   params...)
+  checknorm(normalize,min_norm)
   if source_priors == nothing
     @assert(source_prior_sds != nothing,
             "Missing keyword argument `source_prior_sds`.")
@@ -37,12 +41,14 @@ function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
   end
   MultiPriorTracking(;cohere=ShammaModel.Params(C),
                      source_priors=source_priors,freq_prior=freq_prior,
-                     time_constants=time_constants,params...)
+                     time_constants=time_constants,
+                     normalize=normalize,min_norm=min_norm,
+                     params...)
 end
 
 function expand_params(params::MultiPriorTracking)
   AxisArray([PriorTracking(params.cohere,tc,prior,params.freq_prior,
-                           params.max_sources)
+                           params.max_sources,params.min_norm)
              for tc in params.time_constants for prior in params.source_priors],
             Axis{:params}([(tc,prior) for tc in params.time_constants
                            for prior in axisvalues(params.source_priors)[1]]))
@@ -55,7 +61,7 @@ end
 function track(C::Coherence,params::MultiPriorTracking,progressbar=true,
                progress=track_progress(progressbar,nitr(C,params),"multi-prior"))
 
-  C_ = prepare_coherence(C)
+  C_ = prepare_coherence(C,params.min_norm)
   all_params = expand_params(params)
   S = Array{SourceTracking}(undef,size(all_params,1))
   lp = Array{Array{Float64}}(undef,size(all_params,1))

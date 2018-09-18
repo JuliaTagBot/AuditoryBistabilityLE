@@ -7,11 +7,25 @@ struct PriorTracking{C,Sp,Fp} <: Tracking
   source_prior::Sp
   freq_prior::Fp
   max_sources::Int
+  min_norm::Float64
 end
+function checknorm(normalize,min_norm)
+  if min_norm<Inf && normalize==false
+    error("You must set normalize to true for `min_norm` value to be",
+          " non-infinite")
+  elseif min_norm == Inf && normalize==true
+    error("You must specify a non-infinite value for `min_norm` if",
+          " `normalize==true`.")
+  end
+end
+
 Δt(x::PriorTracking) = Δt(x.cohere)
 function Tracking(C,::Val{:prior};tc=1s,source_prior=nothing,
-                  freq_prior=nothing, max_sources=4)
-  PriorTracking(AuditoryModel.Params(C),tc,source_prior,freq_prior,max_sources)
+                  freq_prior=nothing, max_sources=4,
+                  normalize=false,min_norm=Inf)
+  checknorm(normalize,min_norm)
+  PriorTracking(AuditoryModel.Params(C),tc,source_prior,freq_prior,max_sources,
+                min_norm)
 end
 
 include("tracking_priors.jl")
@@ -29,14 +43,25 @@ struct PermutedCoherence{C,P}
   permuted::P
 end
 
-function prepare_coherence(C::Coherence)
+function prepare_coherence(C::Coherence,min_norm)
   @assert axisdim(C,Axis{:time}) == 1
+  @assert axisdim(C,Axis{:scale}) == 2
+  @assert axisdim(C,Axis{:freq}) == 3
   @assert axisdim(C,Axis{:component}) == 4
+
+  # reorder for cache efficiency and then and normalize the data if necessary
   C_ = permutedims(C,[2,3,4,1])
+  if min_norm < Inf
+    for I in CartesianIndices((Base.axes(C_,3),Base.axes(C_,4)))
+      C_[:,:,I] ./= max(min_norm,norm(vec(view(C_,:,:,I))))
+    end
+  end
   PermutedCoherence(C,C_)
 end
 
-track(C::Coherence,args...) = track(prepare_coherence(C),args...)
+function track(C::Coherence,params,args...) 
+  track(prepare_coherence(C,params.min_norm),params,args...)
+end
 function track(perm::PermutedCoherence,params::PriorTracking,progressbar=true,
                progress = track_progress(progressbar,ntimes(C),"prior"))
   C = perm.cohere
