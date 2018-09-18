@@ -36,11 +36,8 @@ function track_weighting(tracks,σ_t,σ_p,c)
   tcs, priors = zip(axisvalues(AxisArrays.axes(tracks,Axis{:params}()))[1]...)
   p = collect(priors)
   t = collect(log.(ustrip.(uconvert.(s,tcs))))
-  # @show p
-  # @show t
-  W = @. (c*(1 - exp(-(p - p')^2 / (σ_p*log(2))^2))*
-          (1 - exp(-(t - t')^2 / (σ_t*log(2))^2)))
-  # @show size(W)
+  W = @. c*(1 - exp(-(p - p')^2 / (σ_p*log(2))^2 +
+                    -(t - t')^2 / (σ_t*log(2))^2))
 
   x -> W*x
 end
