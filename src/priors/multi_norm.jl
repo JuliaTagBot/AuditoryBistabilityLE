@@ -64,7 +64,7 @@ pdf(stats::MultiNormalStats,x::AbstractVector) = exp(logpdf(stats,x))
 logabsdet_helper(x::AbstractArray,n) = logabsdet(x)[1]
 logabsdet_helper(x::Diagonal,n) = logdet(x)
 # logabsdet_helper(x::AbstractSparseMatrix,n) = sum(log ∘ abs,diag(lufact(x)[:U]))
-logabsdet_helper(x::AbstractSparseMatrix,n) = sum(log ∘ abs,diag(x))
+logabsdet_helper(x::AbstractSparseMatrix,n) = log(abs(det(x)))
 logabsdet_helper(x::Symmetric{<:Any,<:AbstractSparseMatrix},n) = 
   log(abs(det(x)))
 logabsdet_helper(x::UniformScaling,n) = n*log(abs(x.λ))
