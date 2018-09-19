@@ -28,8 +28,8 @@ function findcorr(dims,dist,thresh)
       end
     end
   end
-  @info "Sparsity of source-prior ($(size(corr,1)) × $(size(corr,2))) ridge: "*
-    "$(nnz(corr)) ($(round(Int,100nnz(corr) / length(corr)))%)"
+  # @info "Sparsity of source-prior ($(size(corr,1)) × $(size(corr,2))) ridge: "*
+  #   "$(nnz(corr)) ($(round(Int,100nnz(corr) / length(corr)))%)" maxlog=1
 
   Symmetric(corr)
 end
