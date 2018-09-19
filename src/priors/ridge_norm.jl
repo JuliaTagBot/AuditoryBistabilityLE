@@ -20,7 +20,7 @@ function findcorr(dims,dist,thresh)
   corr = spzeros(n,n)
   for (i,ii) in enumerate(CartesianIndices(dims))
     for (j,jj) in enumerate(CartesianIndices(dims))
-      if i >= j
+      if i <= j
         val = exp(-dist(ii.I,jj.I))
         if val > thresh
           corr[i,j] = val
