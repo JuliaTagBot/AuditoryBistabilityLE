@@ -3,7 +3,9 @@ export map_components
 @with_kw struct MultiPriorTracking{C} <: Tracking
   cohere::C
   time_constants::Array{typeof(1.0s)}
+  time_constant_bias::Vector{Float64}
   source_priors::AxisArray
+  source_prior_bias::Vector{Float64}
   freq_prior
   max_sources::Int = 4
   min_norm::Float64 = Inf
@@ -11,7 +13,9 @@ export map_components
 end
 function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
                   time_constants=time_constants_s*s,
+                  time_constant_bias=zeros(length(time_constants)),
                   source_prior_sds=nothing,source_prior_N=nothing,
+                  source_prior_bias=zeros(length(source_prior_sds)),
                   freq_ridge=0.0, scale_ridge=0.0,
                   source_priors=nothing,
                   freq_prior=nothing,
@@ -40,16 +44,22 @@ function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
     freq_prior = freqprior(freq_prior_bias,freq_prior_N)
   end
   MultiPriorTracking(;cohere=ShammaModel.Params(C),
-                     source_priors=source_priors,freq_prior=freq_prior,
+                     source_priors=source_priors,
+                     source_prior_bias=source_prior_bias,
+                     freq_prior=freq_prior,
                      time_constants=time_constants,
+                     time_constant_bias=time_constant_bias,
                      normalize=normalize,min_norm=min_norm,
                      params...)
 end
 
 function expand_params(params::MultiPriorTracking)
-  AxisArray([PriorTracking(params.cohere,tc,prior,params.freq_prior,
-                           params.max_sources,params.min_norm)
-             for tc in params.time_constants for prior in params.source_priors],
+  AxisArray([(PriorTracking(params.cohere,tc,prior,params.freq_prior,
+                            params.max_sources,params.min_norm), tb + pb)
+             for (tc,tb) in zip(params.time_constants,
+                                params.time_constant_bias)
+             for (prior,pb) in zip(params.source_priors,
+                                   params.source_prior_bias)],
             Axis{:params}([(tc,prior) for tc in params.time_constants
                            for prior in axisvalues(params.source_priors)[1]]))
 end
@@ -66,8 +76,9 @@ function track(C::Coherence,params::MultiPriorTracking,progressbar=true,
   S = Array{SourceTracking}(undef,size(all_params,1))
   lp = Array{Array{Float64}}(undef,size(all_params,1))
 
-  #=@Threads.threads=# for (i,p) in collect(enumerate(all_params))
+  #=@Threads.threads=# for (i,(p,bias)) in collect(enumerate(all_params))
     S[i], lp[i] = track(C_,p,true,progress)
+    lp[i] .+= bias
   end
 
   (AxisArray(S, AxisArrays.axes(all_params,1)),
