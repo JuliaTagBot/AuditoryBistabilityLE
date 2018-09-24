@@ -18,6 +18,8 @@ Statistics.zero(x::RidgeMultiNormalStats{T},C::Coherence) where T =
 function findcorr(dims,dist,thresh)
   n = prod(dims)
   corr = spzeros(n,n)
+  # TODO: consider using a ToeplitzMatrix
+  # here
   for (i,ii) in enumerate(CartesianIndices(dims))
     for (j,jj) in enumerate(CartesianIndices(dims))
       if i <= j

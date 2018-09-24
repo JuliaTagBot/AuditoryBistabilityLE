@@ -68,6 +68,7 @@ logabsdet_helper(x::AbstractSparseMatrix,n) = log(abs(det(x)))
 logabsdet_helper(x::Symmetric{<:Any,<:AbstractSparseMatrix},n) = 
   log(abs(det(x)))
 logabsdet_helper(x::UniformScaling,n) = n*log(abs(x.λ))
+# logabsdet_helper(x::SymmetricToeplitz) = log(abs(prod(diag(chol(x)))))
 
 function logpdf_mvt(v,μ,Σ,x)
   d = length(x)
