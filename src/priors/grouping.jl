@@ -19,8 +19,7 @@ end
 function logpdf(track::TrackedSources,C::AbstractArray,sumcomponents,
                 grouping::Grouping)
   # observed, modeled sources
-  logsum = sum(grouping) do kk_i
-    (kk,i) = kk_i
+  logsum = sum(grouping) do (kk,i)
     observed = sumcomponents(C,kk)
     logpdf(track.params.source_prior+track.sources[i], observed) +
       logpdf(track.params.freq_prior + track.freqs[i],true)
