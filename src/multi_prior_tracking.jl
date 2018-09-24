@@ -14,7 +14,8 @@ end
 function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
                   time_constants=time_constants_s*s,
                   time_constant_bias=zeros(length(time_constants)),
-                  source_prior_sds=nothing,source_prior_N=nothing,
+                  source_prior_sds=nothing,source_prior_strength_s=1.0,
+                  source_prior_strength=source_prior_strength_s*s,
                   source_prior_bias=zeros(length(source_prior_sds)),
                   freq_ridge=0.0, scale_ridge=0.0,
                   source_priors=nothing,
@@ -27,13 +28,14 @@ function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
   if source_priors == nothing
     @assert(source_prior_sds != nothing,
             "Missing keyword argument `source_prior_sds`.")
-    @assert(source_prior_N != nothing,
-            "Missing keyword argument `source_prior_N`.")
+    @assert(source_prior_strength != nothing,
+            "Missing keyword argument `source_prior_strength`.")
+    N = ceil(Int,source_prior_strength/Δt(C))
     source_priors = if iszero(freq_ridge) && iszero(scale_ridge)
-      AxisArray([isonorm(sd,source_prior_N, (size(C,2),size(C,3)))
+      AxisArray([isonorm(sd, N, (size(C,2),size(C,3)))
                  for sd in source_prior_sds], Axis{:prior}(source_prior_sds))
     else
-      AxisArray([ridgenorm(sd,source_prior_N, (size(C,2),size(C,3)),
+      AxisArray([ridgenorm(sd, N, (size(C,2),size(C,3)),
                            freq=freq_ridge,scale=scale_ridge,
                            threshold=ridge_threshold)
                  for sd in source_prior_sds], Axis{:prior}(source_prior_sds))
