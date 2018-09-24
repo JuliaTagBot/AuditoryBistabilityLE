@@ -61,23 +61,24 @@ function logpdf(stats::MultiNormalStats,x::AbstractVector)
 end
 pdf(stats::MultiNormalStats,x::AbstractVector) = exp(logpdf(stats,x))
 
-logabsdet_helper(x::AbstractArray,n) = logabsdet(x)[1]
-logabsdet_helper(x::Diagonal,n) = logdet(x)
-# logabsdet_helper(x::AbstractSparseMatrix,n) = sum(log ∘ abs,diag(lufact(x)[:U]))
-logabsdet_helper(x::AbstractSparseMatrix,n) = log(abs(det(x)))
-logabsdet_helper(x::Symmetric{<:Any,<:AbstractSparseMatrix},n) = 
-  log(abs(det(x)))
-logabsdet_helper(x::UniformScaling,n) = n*log(abs(x.λ))
-# logabsdet_helper(x::SymmetricToeplitz) = log(abs(prod(diag(chol(x)))))
+logdet_(x,n) = logdet(x)
+logdet_(x::UniformScaling,n) = n*log(abs(x.λ))
+factorize_(x) = factorize(x)
+factorize_(x::UniformScaling) = x
 
 function logpdf_mvt(v,μ,Σ,x)
+  Σ_ = factorize_(Σ)
   d = length(x)
-  C = (lgamma((v+d)/2)) - (lgamma(v/2)+(d/2)log(v*π)) -
-    (0.5 * (logabsdet_helper(Σ,d)))
+  C = (lgamma((v+d)/2)) - (lgamma(v/2)+(d/2)log(v*π)) - (0.5 * (logdet_(Σ_,d)))
   diff = abs.(μ.-x)
-  # sometime Σ is not perfectly positive definite....
-  normdiff = max.(0,(diff'/Σ)*diff)
-  C + -(v+d)/2*log(1+normdiff/v)
+  # with poorly conditioned covariances, normdiff can be negative even when the
+  # log determant is a valid, non-infinite number
+  # NOTE: this somewhat akward notation is due to some missing method
+  # definitions in the sparse matrix library (only right divide is defined)
+  normdiff = max(0,(diff'*(Σ_'\diff))[1])
+  result = C + -(v+d)/2*log(1+normdiff/v)
+  @assert !isinf(result)
+  result
 end
 
 function logpdf_thresh(stats::MultiNormalStats,x::AbstractVector,thresh)
