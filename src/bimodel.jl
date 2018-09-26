@@ -44,8 +44,9 @@ function bistable_model(stim::AbstractArray,params,settings;interactive=false,
              settings.nmf...)
 
   # source tracking (sequential grouping)
-  tracks,track_lp = track(C, method=:multi_prior, progressbar=progressbar;
-                          settings.track.analyze...)
+  tracks,track_lp,groupings = track(C, method=:multi_prior, 
+                                   progressbar=progressbar;
+                                   settings.track.analyze...)
 
   track_lp_at = apply_bistable(track_lp,:track,params,
                                progressbar=progressbar,
@@ -81,7 +82,7 @@ function bistable_model(stim::AbstractArray,params,settings;interactive=false,
   if intermediate_results
     (primary_source=mask,
      percepts=(counts=counts,sratio=sratio,bratio=bratio),
-     sources=merge((tracks=tracks,),track_lp_at),
+     sources=merge((tracks=tracks,groupings=groupings),track_lp_at),
      cohere=C,
      cortical=merge((clean=csclean[:,:,startHz .. stopHz],),csat),
      spect=spectat)

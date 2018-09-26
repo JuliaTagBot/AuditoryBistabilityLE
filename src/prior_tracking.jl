@@ -86,12 +86,14 @@ function track(perm::PermutedCoherence,params::PriorTracking,progressbar=true,
 
   veccomponent(C_t,k) = vec(view(C_t,:,:,k))
 
-  groupings = CircularDeque{Grouping}(window+1)
+  memory = CircularDeque{Grouping}(window+1)
+  grouping = []
   for t in eachindex(times(C))
     # find the MAP grouping of sources
     MAPgrouping, lp_out[t] = # OLD PROFILE COUNT: 18922
       maximumby(g -> logpdf(track,view(C_,:,:,:,t:t),sumcomponents,g),
                 possible_groupings(params.max_sources,ncomponents(C)))
+    push!(grouping,MAPgrouping)
 
     # arrange the sources
     for (kk,i) in iterable(MAPgrouping)
@@ -103,9 +105,10 @@ function track(perm::PermutedCoherence,params::PriorTracking,progressbar=true,
     # update the source models
     update!(track,view(C_out,:,:,:,t),veccomponent,MAPgrouping)
     # mult!(track,decay)
-    push!(groupings,MAPgrouping)
+    push!(memory,MAPgrouping)
     if t > window
-      downdate!(track,view(C_out,:,:,:,t-window),veccomponent,popfirst!(groupings))
+      downdate!(track,view(C_out,:,:,:,t-window),veccomponent,
+                popfirst!(memory))
     end
 
     next!(progress)
@@ -117,7 +120,7 @@ function track(perm::PermutedCoherence,params::PriorTracking,progressbar=true,
                                     AxisArrays.axes(C,3),
                                     Axis{:component}(1:params.max_sources),
                                     AxisArrays.axes(C,1)))
-  (tracking,lp_out)
+  (tracking,lp_out,grouping)
 end
 
 function sort_components(x)
@@ -125,3 +128,40 @@ function sort_components(x)
   x .= x[Axis{:component}(order)]
   x
 end
+
+function prediction(tracking::SourceTracking,groupings,
+                    perm::PermutedCoherence,
+                    params::PriorTracking)
+  C = perm.cohere
+  C_ = perm.permuted
+  timeax = 4
+
+  track = TrackedSources(size(C_,1)*size(C_,2),params)
+
+  window = ceil(Int,params.tc / Δt(C))
+  lp_out = AxisArray(fill(0.0,ntimes(C)),AxisArrays.axes(C,1))
+  buf = Array{eltype(tracking)}(undef,size(tracking,1),size(tracking,2))
+  function sumcomponents(C_t,kk)
+    y = sum!(buf,view(C_t,:,:,kk,:))
+    vec(buf)
+  end
+
+  veccomponent(C_t,k) = vec(view(C_t,:,:,k))
+
+  pred = AxisArray(Array{Float64}(undef,length(times(C))),times(C))
+  memory = CircularDeque{Grouping}(window+1)
+  for t in eachindex(times(C))
+    pred[t] = logpdf(track,view(C_,:,:,:,t:t),sumcomponents,groupings[t])
+
+    # update the source models
+    update!(track,view(tracking,:,:,:,t),veccomponent,groupings[t])
+    push!(memory,groupings[t])
+    if t > window
+      downdate!(track,view(tracking,:,:,:,t-window),veccomponent,
+                popfirst!(memory))
+    end
+  end
+
+  pred
+end
+

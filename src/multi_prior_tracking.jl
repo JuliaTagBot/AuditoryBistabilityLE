@@ -82,14 +82,26 @@ function track(C::Coherence,params::MultiPriorTracking,progressbar=true,
   all_params = expand_params(params)
   S = Array{SourceTracking}(undef,size(all_params,1))
   lp = Array{Array{Float64}}(undef,size(all_params,1))
+  grouping = Array{Array{Any}}(undef,size(all_params,1))
 
   #=@Threads.threads=# for (i,(p,bias)) in collect(enumerate(all_params))
-    S[i], lp[i] = track(C_,p,true,progress)
+    S[i], lp[i], grouping[i] = track(C_,p,true,progress)
     lp[i] .+= bias
   end
 
   (AxisArray(S, AxisArrays.axes(all_params,1)),
-   AxisArray(hcat(lp...), AxisArrays.axes(C,1), AxisArrays.axes(all_params,1)))
+   AxisArray(hcat(lp...), AxisArrays.axes(C,1), AxisArrays.axes(all_params,1)),
+   grouping)
+end
+
+function prediction(C,tracks,groupings,params::MultiPriorTracking)
+  C_ = prepare_coherence(C,params.min_norm)
+  all_params = expand_params(params)
+  pred = Array{AxisArray{Float64}}(undef,size(all_params,1))
+  for (i,(p,_)) in collect(enumerate(all_params))
+    pred[i] = prediction(tracks, groupings, C_, p)
+  end
+  AxisArray(pred, AxisArrays.axes(all_params,1))
 end
 
 function map_components(fn,tracks::AxisArray{<:SourceTracking},

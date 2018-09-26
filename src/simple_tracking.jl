@@ -44,6 +44,16 @@ function track(C::Coherence;method=:simple,progressbar=true,params...)
   track(C,method,progressbar)
 end
 
+function prediction(result::NamedTuple,index;kwds...)
+  prediction(result.cohere, result.sources.tracks[index],
+             result.sources.groupings[index]; kwds...)
+end
+
+function prediction(C,tracks,groupings;method=:simple,params...)
+  method = Tracking(C,Val{method}();params...)
+  prediction(C,tracks,groupings,method)
+end
+
 function topN(by,N,xs)
   state = start(xs)
   if done(xs,state)
