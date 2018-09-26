@@ -130,14 +130,14 @@ end
 
 function ridgenorm(prior::Number,N::Number,dims::Tuple,dist::Function,
                    x2_offset::Number=prod(dims);threshold)
-  ConstRidgePrior(prior,Float64(N),Float64(x2_offset),
+  ConstRidgePrior(float(prior),Float64(N),Float64(x2_offset),
                   findcorr(dims,dist,threshold))
 end
 
 function ridgenorm(prior::Number,N::Number,dims::Tuple,
                    x2_offset::Number=prod(dims);scale,freq,threshold)
   dist = rdist(scale=scale,freq=freq)
-  ridgenorm(prior,N,dims,dist,x2_offset,threshold=threshold)
+  ridgenorm(float(prior),N,dims,dist,x2_offset,threshold=threshold)
 end
 
 function Base.zero(prior::ConstRidgePrior,d)
