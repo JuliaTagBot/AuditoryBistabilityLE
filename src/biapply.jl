@@ -32,9 +32,10 @@ end
 
 function estimate_bandwidth(sp;threshold=0.25,window=500ms,step=250ms)
   map_windowing(sp,length=window,step=step) do window
-    levels = dropdims(mapslices(mean,Array(window),dims=1),dims=1)
-    peak = maximum(levels)
-    over = findall(levels .> threshold*peak)
+    levels = dropdims(mapslices(x -> quantile(x,0.9),Array(window),dims=1),
+                      dims=1)
+    thresh_level = quantile(levels,1 - threshold/length(levels))
+    over = findall(levels .> thresh_level)
     maximum(over) - minimum(over) + 1
   end
 end
