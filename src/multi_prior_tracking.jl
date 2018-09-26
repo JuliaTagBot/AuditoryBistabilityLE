@@ -5,7 +5,7 @@ export map_components
   time_constants::Array{typeof(1.0s)}
   time_constant_bias::Vector{Float64}
   source_priors::AxisArray
-  source_prior_bias::Vector{Float64}
+  source_prior_bias::Vector{Vector{Float64}}
   freq_prior
   max_sources::Int = 4
   min_norm::Float64 = Inf
@@ -14,9 +14,10 @@ end
 function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
                   time_constants=time_constants_s*s,
                   time_constant_bias=zeros(length(time_constants)),
-                  source_prior_sds=nothing,source_prior_strength_s=1.0,
-                  source_prior_strength=source_prior_strength_s*s,
-                  source_prior_bias=zeros(length(source_prior_sds)),
+                  source_prior_sds=nothing,source_prior_strengths_s=[1.0],
+                  source_prior_strengths=source_prior_strengths_s.*s,
+                  source_prior_bias=[zeros(length(source_prior_sds)),
+                                     zeros(length(source_prior_strengths))],
                   freq_ridge=0.0, scale_ridge=0.0,
                   source_priors=nothing,
                   freq_prior=nothing,
@@ -28,17 +29,19 @@ function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
   if source_priors == nothing
     @assert(source_prior_sds != nothing,
             "Missing keyword argument `source_prior_sds`.")
-    @assert(source_prior_strength != nothing,
-            "Missing keyword argument `source_prior_strength`.")
-    N = ceil(Int,source_prior_strength/Δt(C))
+    @assert(source_prior_strengths != nothing,
+            "Missing keyword argument `source_prior_strengths`.")
+    source_prior_Ns = source_prior_strengths./Δt(C)
+    pr = vec(collect(Base.Iterators.product(source_prior_sds,source_prior_Ns)))
+
     source_priors = if iszero(freq_ridge) && iszero(scale_ridge)
-      AxisArray([isonorm(sd, N, (size(C,2),size(C,3)))
-                 for sd in source_prior_sds], Axis{:prior}(source_prior_sds))
+      AxisArray([isonorm(sd, N, (size(C,2),size(C,3))) for (sd,N) in pr], 
+                Axis{:params}(pr))
     else
-      AxisArray([ridgenorm(sd, N, (size(C,2),size(C,3)),
-                           freq=freq_ridge,scale=scale_ridge,
-                           threshold=ridge_threshold)
-                 for sd in source_prior_sds], Axis{:prior}(source_prior_sds))
+      vals = [ridgenorm(sd, N, (size(C,2),size(C,3)),
+                        freq=freq_ridge,scale=scale_ridge,
+                        threshold=ridge_threshold) for (sd,N) in pr]
+      AxisArray(vals, Axis{:params}(pr))
     end
   end
 
@@ -56,14 +59,16 @@ function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
 end
 
 function expand_params(params::MultiPriorTracking)
+  b = vec(params.source_prior_bias[1] .+ params.source_prior_bias[2]')
+  pr = params.source_priors
+
   AxisArray([(PriorTracking(params.cohere,tc,prior,params.freq_prior,
-                            params.max_sources,params.min_norm), tb + pb)
+                            params.max_sources,params.min_norm), tb + b)
              for (tc,tb) in zip(params.time_constants,
                                 params.time_constant_bias)
-             for (prior,pb) in zip(params.source_priors,
-                                   params.source_prior_bias)],
-            Axis{:params}([(tc,prior) for tc in params.time_constants
-                           for prior in axisvalues(params.source_priors)[1]]))
+             for (prior,b) in zip(pr,b)],
+            Axis{:params}([(tc,sd,N) for tc in params.time_constants
+                           for (sd,N) in axisvalues(params.source_priors)[1]]))
 end
 
 function nitr(C::Coherence,params::MultiPriorTracking)

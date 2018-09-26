@@ -181,8 +181,6 @@ function rplot(tracks::AxisArray{<:SourceTracking},component=1;kwds...)
   ii = CartesianIndices(size(data))
   at(i) = vec(map(ii -> ii[i],ii))
   track_vals = axisvalues(tracks)[1]
-  # @show track_vals
-  # @show unique(at(4))
 
   df = DataFrame(value = vec(data),
                  time = vec(ustrip.(uconvert.(s,times(data)[at(3)]))),
@@ -190,8 +188,10 @@ function rplot(tracks::AxisArray{<:SourceTracking},component=1;kwds...)
                                                       scales(data)[at(1)])),
                                     digits=2)),
                  freq_bin = vec(at(2)),
-                 tau = vec([ustrip(τ) for (τ,_) in track_vals[at(4)]]),
-                 sigma = vec([ustrip(σ) for (_,σ) in track_vals[at(4)]]))
+                 tau = vec([ustrip(τ) for (τ,_,__) in track_vals[at(4)]]),
+                 sigma = vec([ustrip(σ) for (_,σ,__) in track_vals[at(4)]]),
+                 N = vec([N for (_,__,N) in track_vals[at(4)]]))
+
   # @show(df[1:5,:])
 
   fbreaks,findices = freq_ticks(tracks[1])
@@ -204,7 +204,7 @@ R"""
     factor(scalestr(x),levels=scalestr(scalevals))
   }
 
-  $p + facet_grid(ordered_scales(scale)~tau+sigma,labeller=label_both) +
+  $p + facet_grid(ordered_scales(scale)~tau+sigma+N,labeller=label_both) +
   scale_y_continuous(breaks=$findices,labels=$fbreaks) +
   ylab('Frequency (Hz)') + xlab('Time (s)')
 """
