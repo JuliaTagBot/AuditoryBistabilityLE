@@ -10,7 +10,7 @@ lowpass = 1.5
 lowpass_order = 3
 
 [scales.analyze]
-scales_cycoct = [0.5,1.0,2.0,4.0,8.0]
+scales_cycoct = [0.5,1.0,2.0,4.0]
 bandonly = true
 
 [scales.bistable]
@@ -24,26 +24,28 @@ freq_limits_Hz = [400.0, 1200.0]
 bandonly = true
 
 [nmf]
-ncomponents = 3
+ncomponents = 2
 window_ms = 100
 delta_ms = 100
 skipframes = 0
 maxiter = 100
 tol = 1e-3
 
-[track]
-buildup_time_s = 2.0
-
 [track.analyze]
-time_constants_s = [4.0,8.0,16.0] 
-max_sources = 3
-source_prior_sds = [5.0,6.0,7.0,8.0,9.0]
-source_prior_N = 4
+normalize = true
+min_norm = 0.2
+time_constants_s = [2.0,4.0]
+max_sources = 2
+source_prior_sds = [0.25,0.5,0.8]
+source_prior_strengths_s = [10,15,20]
+scale_ridge = 1e-8
+freq_ridge = 5.0
 freq_prior_bias = 0
 freq_prior_N = 2
 
 [track.bistable]
-input_bound = [0.0, 0.75]
+normalize_start_s = 2.0
+input_bound = [0.0, 1.0]
 lowpass = 1.5
 lowpass_order = 3
 
@@ -52,5 +54,4 @@ window_ms = 500
 delta_ms = 250
 min_length_ms = 750
 threshold = 2.1
-bandwidth_threshold = 0.25
-
+bandwidth_threshold = 1.5
