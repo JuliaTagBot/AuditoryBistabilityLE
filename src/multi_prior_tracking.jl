@@ -123,14 +123,15 @@ end
 function mask(cr::ShammaModel.Cortical,
               tracks::AxisArray{<:SourceTracking},
               tracks_lp::AxisArray{<:Float64},
-              order=1;window=500ms,step=250ms,progressbar=false)
+              order=1;window_ms=500,window=window_ms*ms,
+              delta_ms=250,delta=delta_ms*ms,progressbar=false)
 
   @assert axisdim(cr,Axis{:time}) == 1
   @assert axisdim(cr,Axis{:scale}) == 2
   @assert axisdim(cr,Axis{:freq}) == 3
   @assert size(cr)[2:3] == size(tracks[1])[1:2] "Dimension mismatch"
 
-  windows = windowing(tracks[1],length=window,step=step)
+  windows = windowing(tracks[1],length=window,step=delta)
 
   progress = progressbar ? Progress(length(windows),"Masking: ") : nothing
   mask_helper(cr,tracks,tracks_lp,order,windows,progress)

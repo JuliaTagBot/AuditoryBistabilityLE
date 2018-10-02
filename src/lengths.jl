@@ -48,10 +48,11 @@ function interpolate_times(x,times::AbstractVector,to::AbstractVector)
   y
 end
 
-function percept_lengths(counts,minlen=0.5s)
-  lens,vals = findlengths(Array(counts))
+function percept_lengths(counts; threshold = 0.45, 
+                         min_length_ms=750, min_length=min_length_ms*ms)
+  lens,vals = findlengths(Array(counts .< threshold))
   slens = lens * ustrip(uconvert(s,Δt(counts)))
 
-  mergelengths(slens,vals,ustrip(uconvert(s,minlen)))
+  mergelengths(slens,vals,ustrip(uconvert(s,min_length)))
 end
 

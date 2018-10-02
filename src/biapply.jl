@@ -1,6 +1,7 @@
 using ShammaModel
 using AxisArrays
 const reasonable_response_maximum = 100
+export percept_lengths, bandwidth_ratio
 
 function bound(x,min,max)
   y = 1/(1+exp(-8((x - min)/(max - min) - 0.5)))
@@ -9,29 +10,16 @@ function bound(x,min,max)
   min + (max-min)*(clamp(y,miny,maxy) - miny)/(maxy - miny)
 end
 
-function strengths(tracks,tracks_lp;kwds...)
-  strengths = map_components(tracks,tracks_lp;kwds...) do components
-    component_means(components)
-  end
-
-  AxisArray(hcat(strengths...),AxisArrays.axes(strengths,Axis{:time}))
+function percept_lengths(result::NamedTuple,settings)
+  settings = read_settings(settings)
+  ratio = bandwidth_ratio(result,settings)
+  percept_lengths(ratio,settings)
 end
 
-function ratio_to_lengths(ratio,threshold=2,min_length=1s)
-  percept_lengths(AxisArray(ratios .< threshold,
-                            AxisArrays.axes(ratios,Axis{:time})),min_length)
-end
+percept_lengths(ratio::AbstractVector,settings) = percept_lengths(ratio;settings.percept_lengths...)
 
-function component_ratio(tracks,tracks_lp;min_length=1s,
-                         intermediate_results=false,kwds...)
-  map_components(tracks,tracks_lp;kwds...) do components
-    strengths = sort(component_means(components),rev=true)
-    strengths[1] / sum(strengths[2:end])
-  end
-end
-
-function estimate_bandwidth(sp;threshold=0.25,window=500ms,step=250ms)
-  map_windowing(sp,length=window,step=step) do window
+function estimate_bandwidth(sp;threshold=0.25,window=500ms,delta=250ms)
+  map_windowing(sp,length=window,step=delta) do window
     levels = dropdims(mapslices(x -> quantile(x,0.9),Array(window),dims=1),
                       dims=1)
     thresh_level = quantile(levels,1 - threshold/length(levels))
@@ -40,39 +28,38 @@ function estimate_bandwidth(sp;threshold=0.25,window=500ms,step=250ms)
   end
 end
 
-function component_bandwidths(cs,tracks,tracks_lp;min_length=1s,
-                                   threshold=0.25,
-                                   progressbar=false,window=500ms,
-                                   step=250ms)
-  crmask = mask(cs,tracks,tracks_lp,window=window,step=step)
-  spmask = audiospect(crmask,progressbar=progressbar)
-  sp = audiospect(cs,progressbar=progressbar)
+function bandwidth_ratio(result,settings)
+  settings = read_settings(settings)
+  startHz, stopHz = settings.rates.freq_limits_Hz.*Hz
 
-  fullband = estimate_bandwidth(sp,window=window,step=step,
-                                threshold=threshold)
-  maskband = estimate_bandwidth(spmask,window=window,step=step,
-                                threshold=threshold)
-
-  (AxisArray(maskband,AxisArrays.axes(fullband,Axis{:time})),
-   AxisArray(fullband,AxisArrays.axes(fullband,Axis{:time})))
-
+  bratio, mask = component_ratio(
+    result.primary_source,
+    result.spect[:,startHz .. stopHz],
+    settings...
+  )
 end
 
-function component_bandwidth_ratio(cs,tracks,tracks_lp;min_length=1s,
-                                   threshold=0.25,
-                                   progressbar=false,window=500ms,
-                                   step=250ms)
-  crmask = mask(cs,tracks,tracks_lp,window=window,step=step)
-  spmask = audiospect(crmask,progressbar=progressbar)
-  sp = audiospect(cs,progressbar=progressbar)
+function bandwidth_ratio(spmask::AbstractMatrix, sp::AbstractMatrix,
+                         settings)
+  settings = read_settings(settings)
+  ratio = bandwidth_ratio(spmask, sp; settings.bandwidth_ratio...)
+end
 
-  fullband = estimate_bandwidth(sp,window=window,step=step,
+function percept_lengths(spmask::AbstractMatrix, sp::AbstractMatrix,
+                         settings)
+  ratio = bandwidth_ratio(spmask, sp, settings)
+  percept_lengths(ratio, settings)
+end
+
+function bandwidth_ratio(spmask, sp; threshold=1.5,
+                         window_ms=500,window=window_ms*ms,
+                         delta_ms=250,delta=delta_ms*ms)
+  fullband = estimate_bandwidth(sp,window=window,delta=delta,
                                 threshold=threshold)
-  maskband = estimate_bandwidth(spmask,window=window,step=step,
+  maskband = estimate_bandwidth(spmask,window=window,delta=delta,
                                 threshold=threshold)
 
-  AxisArray(maskband ./ fullband,AxisArrays.axes(fullband,Axis{:time})),
-    spmask
+  AxisArray(maskband ./ fullband,AxisArrays.axes(fullband,Axis{:time}))
 end
 
 function meanabs(A,n)
