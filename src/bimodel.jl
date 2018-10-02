@@ -47,7 +47,7 @@ function bistable_model(stim::AbstractArray,params,settings;interactive=false,
   tracks,track_lp = track(C, method=:multi_prior, progressbar=progressbar;
                           settings.track.analyze...)
 
-  track_lp_at = apply_bistable(track_lp,:track,params,
+  track_lp_at = apply_bistable!(track_lp,:track,params,
                                progressbar=progressbar,
                                intermediate_results=intermediate_results;
                                settings.track.bistable...)
