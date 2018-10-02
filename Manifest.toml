@@ -33,9 +33,9 @@ version = "0.5.0"
 
 [[CategoricalArrays]]
 deps = ["Compat", "Future", "JSON", "Missings", "Printf", "Reexport"]
-git-tree-sha1 = "35f527e3c955b486f2d7de3ec61c6c7cb99e3274"
+git-tree-sha1 = "6362c49130b5888f5628bc197ee5f17aec7d2a88"
 uuid = "324d7699-5711-5eae-9e2f-1d82baa6b597"
-version = "0.3.14"
+version = "0.4.0"
 
 [[CodecZlib]]
 deps = ["BinaryProvider", "Libdl", "Pkg", "Test", "TranscodingStreams"]
@@ -123,9 +123,9 @@ version = "0.2.4"
 
 [[FileIO]]
 deps = ["Pkg", "Random", "Test"]
-git-tree-sha1 = "b80161b7e679a1241f9441ebfa60b62d4239cf99"
+git-tree-sha1 = "481e4db939f005db39f7296599d0543c0744fe30"
 uuid = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
-version = "1.0.1"
+version = "1.0.2"
 
 [[FixedPointNumbers]]
 deps = ["Pkg", "Test"]
@@ -309,11 +309,11 @@ uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 
 [[ShammaModel]]
 deps = ["AxisArrays", "Colors", "DSP", "DataFrames", "FFTW", "FileIO", "JLD2", "ProgressMeter", "Requires", "SampledSignals", "Statistics", "Test", "Unitful"]
-git-tree-sha1 = "5a61db3b78e7d21836ed9b66b245617df3de7fc2"
-repo-rev = "9b4bd56fb43a03b13ca65f7d4fc1be2d74387a69"
+git-tree-sha1 = "b0f33d5a789e911f0ba5c955f6995116ecc8e976"
+repo-rev = "master"
 repo-url = "https://github.com/haberdashPI/ShammaModel.jl"
 uuid = "80f90042-ac61-11e8-0ace-f1a8d5e03555"
-version = "0.1.1"
+version = "0.1.2"
 
 [[SharedArrays]]
 deps = ["Distributed", "Mmap", "Random", "Serialization"]
