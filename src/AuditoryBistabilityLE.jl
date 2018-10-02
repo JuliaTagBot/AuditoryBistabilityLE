@@ -30,6 +30,7 @@ include("peaks.jl")
 include("lengths.jl")
 include("biapply.jl")
 include("bimodel.jl")
+include("compress.jl")
 
 # include(joinpath(@__DIR__,"rplots.jl"))
 # include(joinpath(@__DIR__,"rplots.jl"))
