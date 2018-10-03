@@ -85,8 +85,8 @@ function bistable_model(spect::AbstractMatrix,params,settings;interactive=false,
      spect=spectat,
      input=spect)
   else
-    (percepts=(ratio=ratio,lengths=percept_lengths(ratio,settings)),
-     primary_source=mask)
+    (percepts=(ratio=ratio,counts=percept_lengths(ratio,settings)),
+     primary_source=spmask)
   end
 end
 
