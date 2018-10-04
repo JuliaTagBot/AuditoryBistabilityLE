@@ -28,7 +28,7 @@ function estimate_bandwidth(sp;threshold=0.25,window=500ms,delta=250ms)
   end
 end
 
-function bandwidth_ratio(result,settings)
+function bandwidth_ratio(result::NamedTuple,settings)
   settings = read_settings(settings)
   startHz, stopHz = settings.rates.freq_limits_Hz.*Hz
 
