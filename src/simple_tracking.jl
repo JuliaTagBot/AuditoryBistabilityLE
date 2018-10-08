@@ -10,33 +10,13 @@ Tracking(::Val{:simple};params...) = SimpleTracking(;params...)
 
 # TODO: this makes me realize I can make a more general metadata array that
 # isn't an axis array at all
-struct SourceTracking{P,T,N} <: ShammaModel.Result{T,N}
-  params::P
-  val::AxisArray{T,N}
-  function SourceTracking(params::P,val::AbstractArray{T,N}) where {T,N,P}
-
-    @assert axisdim(val,Axis{:scale}) == 1
-    @assert axisdim(val,Axis{:freq}) == 2
-    @assert axisdim(val,Axis{:component}) == 3
-    @assert axisdim(val,Axis{:time}) == 4
-    new{P,T,N}(params,val)
-  end
-end
-ShammaModel.hastimes(x::SourceTracking) = HasTimes()
-ShammaModel.Params(x::SourceTracking) = x.params
-AxisArrays.AxisArray(x::SourceTracking) = x.val
-Δt(x::SourceTracking) = Δt(x.params)
-ShammaModel.resultname(x::SourceTracking) = "Source Interpretation"
-ShammaModel.similar_helper(::SourceTracking,val,params) = SourceTracking(val,params)
+const WithAxes{Ax} = AxisArray{<:Any,<:Any,<:Any,Ax}
+const SourceTracking = 
+  MetaArray{<:WithAxes{<:Tuple{Axis{:scale},Axis{:freq},
+                               Axis{:component},Axis{:time}}}}
 component_means(S::SourceTracking) = vec(mean(S,dims=[1,2,4]))
-component_means(S::SubArray{<:Any,<:Any,<:SourceTracking}) = 
+function component_means(S::SubArray{<:Any,<:Any,<:SourceTracking}) 
   vec(mean(S,dims=[1,2,4]))
-function ShammaModel.modelwrap(x::SourceTracking,newval::AxisArray)
-  if axisnames(x) == axisnames(newval)
-    SourceTracking(ShammaModel.Params(x),newval)
-  else
-    newval
-  end
 end
 
 function track(C::Coherence;method=:simple,progressbar=true,params...)

@@ -9,7 +9,7 @@ export cohere, component, mask, ncomponents, components, component_means,
   windowing, map_windowing
 
 abstract type CoherenceMethod end
-struct CParams{M,P} <: ShammaModel.Params
+struct CParams{M,P}
   cort::P
   ncomponents::Int
   skipframes::Int
@@ -18,56 +18,25 @@ struct CParams{M,P} <: ShammaModel.Params
   method::M
 end
 
-struct Coherence{M,T,N} <: ShammaModel.Result{T,N}
-  val::AxisArray{T,N}
-  params::CParams{M}
-end
-ShammaModel.Params(x::Coherence) = x.params
-AxisArrays.AxisArray(x::Coherence) = x.val
-ShammaModel.resultname(x::Coherence) = "Coherence Components"
-ShammaModel.similar_helper(::Coherence,val,params) = Coherence(val,params)
-ShammaModel.Δt(as::CParams) = as.delta
+const Coherence = MetaArray{<:AxisArray,<:CParams}
+const CParamLike = Union{CParams,Coherence}
 
-struct CoherenceComponent{M,T,N} <: ShammaModel.Result{T,N}
-  val::AxisArray{T,N}
-  params::CParams{M}
-end
-ShammaModel.Params(x::CoherenceComponent) = x.params
-AxisArrays.AxisArray(x::CoherenceComponent) = x.val
-ShammaModel.resultname(x::CoherenceComponent) = "Single Coherence Component"
-ShammaModel.similar_helper(::CoherenceComponent,val,params) =
-  CoherenceComponent(val,params)
+ShammaModel.Δt(as::CParamLike) = as.delta
 
-function ShammaModel.modelwrap(x::A,newval::AxisArray{T}) where
-  {T,M,A <: Coherence{M,T}}
-
-  if setdiff(axisnames(x),axisnames(newval)) == [:component]
-    CoherenceComponent(newval,ShammaModel.Params(x))
-  elseif axisnames(x) == axisnames(newval)
-    A(newval,ShammaModel.Params(x))
+function Base.show(io::IO,::MIME"text/plain",x::Coherence)
+  if !get(io, :compact, false)
+    println(io,"Coherence Components")
+    describe_axes(io,x)
   else
-    newval
+    println(io,string(duration(x))," Coherence Components")
   end
 end
 
-function Coherence(x::Coherence,p::CParams)
-  @assert x.params == p "Coherence parameters do not match"
-  x
-end
-
-function Coherence(x::AbstractArray,p::CParams)
-  @assert nfreqs(p.cort) == nfreqs(x) "Frequency channels do not match"
-  Coherence(x,p)
-end
-
 ncomponents(x::CParams) = x.ncomponents
-ncomponents(x::ShammaModel.Result) = length(components(x))
-ncomponents(x::AxisArray) = size(x,axisdim(x,Axis{:component}))
+ncomponents(x::AbstractArray) = size(x,axisdim(x,Axis{:component}))
 components(x::CParams) = 1:ncomponents(x)
-components(x::ShammaModel.Result) = components(AxisArray(x))
-components(x::AxisArray) = axisvalues(AxisArrays.axes(x,Axis{:component}))[1]
-
-component(x::Union{AxisArray,Coherence},n) = x[Axis{:component}(n)]
+components(x::AbstractArray) = axisvalues(AxisArrays.axes(x,Axis{:component}))[1]
+component(x::AbstractArray,n) = x[Axis{:component}(n)]
 
 ShammaModel.hastimes(x::Coherence) = HasTimes()
 
@@ -84,7 +53,7 @@ function CParams(x;ncomponents=1,window_ms=1000,window=window_ms*ms,
                  method=:nmf,skipframes=0,method_kwds...)
   method = CoherenceMethod(Val{method},method_kwds)
 
-  CParams(ShammaModel.Params(x), ncomponents, skipframes,
+  CParams(getmeta(x), ncomponents, skipframes,
           convert(typeof(1.0s),window), convert(typeof(1.0s),delta), method)
 end
 
@@ -128,7 +97,7 @@ function nunits(params::CParams,x)
   end
 end
 
-cohere(x::ShammaModel.Result;progressbar=true,params...) =
+cohere(x::ShammaModel.Cortical;progressbar=true,params...) =
   cohere(x,CParams(x;params...),progressbar)
 
 function cohere_progress(progressbar,x,params)
@@ -138,7 +107,8 @@ function cohere_progress(progressbar,x,params)
   end
 end
 
-function cohere(x::AbstractArray,params::CParams,progressbar=true,
+function cohere(x::MetaUnion{AxisArray},params::CParams,
+                progressbar=true,
                 progress = cohere_progress(progressbar,x,params))
   @assert axisdim(x,Axis{:time}) == 1
   @assert axisdim(x,Axis{:rate}) == 2
@@ -149,7 +119,7 @@ function cohere(x::AbstractArray,params::CParams,progressbar=true,
   # if we already have components, just wrap up the values with
   # parameters (since we've already computed components)
   if :component in axisnames(x)
-    return Coherence(x,params)
+    return MetaArray(params,x)
   end
 
   windows = windowing(x,params)
@@ -164,29 +134,28 @@ function cohere(x::AbstractArray,params::CParams,progressbar=true,
   with_method(params.method,K) do extract
     for (i,w_inds) in enumerate(windows)
       skipped = w_inds[1:1+params.skipframes:end]
-      # axis array can't handle skipped Base.axes, so we assume
+      # axis array can't handle skipped indices, so we assume
       # the right dimensionality
-      components = extract(x.val.data[skipped,:,:,:])
+      components = extract(x[skipped,:,:,:])
       C[i,Base.axes(components)...] = components
 
       next!(progress)
     end
   end
 
-  Coherence(C,params)
+  MetaArray(params,C)
 end
 
-function mask(cr::AbstractArray,C::Coherence)
-  error("Please select one component (see documentation for `component`).")
-end
-
-function mask(cr::AbstractArray{T},C::CoherenceComponent) where T
+function mask(cr::AbstractArray{T},C::Coherence) where T
+  if size(C,4) != 1
+    error("Please select one component (see documentation for `component`).")
+  end
   @assert axisdim(cr,Axis{:time}) == 1
   @assert axisdim(cr,Axis{:rate}) == 2
-  @assert size(cr)[3:end] == size(C)[2:end] "Dimension mismatch"
+  @assert size(cr)[3:4] == size(C)[2:3] "Dimension mismatch"
 
-  windows = enumerate(windowing(cr,ShammaModel.Params(C)))
-  y = zeros(AxisArray(cr))
+  windows = enumerate(windowing(cr,getmeta(C)))
+  y = zeros(Array(cr))
   norm = similar(y,real(T))
   norm .= zero(real(T))
   @showprogress "Masking: " for (i,w_inds) in windows
@@ -198,5 +167,5 @@ function mask(cr::AbstractArray{T},C::CoherenceComponent) where T
   y ./= maximum(abs,y)
   y .= sqrt.(abs.(cr) .* y) .* exp.(angle.(cr).*im)
 
-  cortical(y,ShammaModel.Params(cr))
+  cortical(y,getmeta(cr))
 end

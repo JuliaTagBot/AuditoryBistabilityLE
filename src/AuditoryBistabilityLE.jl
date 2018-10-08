@@ -7,6 +7,7 @@ using LinearAlgebra
 using SparseArrays
 using SpecialFunctions
 using TOML
+using MetaArrays
 
 import ShammaModel: Δt, Δf, times, freqs, scales, rates
 

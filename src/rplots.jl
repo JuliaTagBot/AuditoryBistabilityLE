@@ -66,37 +66,6 @@ R"""
 """
 end
 
-function rplot(C::CoherenceComponent{M,T,3} where {M,T};λ_digits=:automatic,
-               kwds...)
-  @assert axisdim(C,Axis{:time}) == 1
-  @assert axisdim(C,Axis{:scale}) == 2
-  @assert axisdim(C,Axis{:freq}) == 3
-
-  ii = CartesianIndices(size(C))
-  at(i) = map(ii -> ii[i],ii)
-
-  df = DataFrame(value = vec(C),
-                 time = vec(ustrip.(uconvert.(s,times(C)[at(1)]))),
-                 scale = vec(round.(ustrip.(uconvert.(cycoct,scales(C)[at(2)])),
-                                    digits=2)),
-                 freq_bin = vec(at(3)))
-
-  fbreaks,findices = freq_ticks(C)
-  p = raster_plot(df;value=:value,x=:time,y=:freq_bin,kwds...)
-
-R"""
-  scalevals = $(ustrip.(uconvert.(cycoct,scales(C))))
-  scalestr = function(x){sprintf("'Scale: %3.2f cyc/oct'",x)}
-  ordered_scales = function(x){
-    factor(scalestr(x),levels=scalestr(scalevals))
-  }
-
-  $p + facet_grid(ordered_scales(scale)~.) + #ordered_scales(scale)) +
-    scale_y_continuous(breaks=$findices,labels=$fbreaks) +
-    ylab('Frequency (Hz)') + xlab('Time (s)')
-"""
-end
-
 function rplot(C::Coherence{M,T,4} where {M,T};λ_digits=:automatic,
                kwds...)
   C = sort_components(C)

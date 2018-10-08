@@ -48,8 +48,7 @@ function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
   if freq_prior == nothing
     freq_prior = freqprior(freq_prior_bias,freq_prior_N)
   end
-  MultiPriorTracking(;cohere=ShammaModel.Params(C),
-                     source_priors=source_priors,
+  MultiPriorTracking(;cohere=getmeta(C), source_priors=source_priors,
                      source_prior_bias=source_prior_bias,
                      freq_prior=freq_prior,
                      time_constants=time_constants,
@@ -138,12 +137,12 @@ function mask(cr::ShammaModel.Cortical,
 end
 
 function mask_helper(cr,tracks,tracks_lp,order,windows,progress)
-  y = zero(AxisArray(cr))
-  norm = similar(y,real(eltype(cr)))
-  norm .= zero(real(eltype(cr)))
+  y = zero(cr)
+  norm = similar(cr,real(eltype(cr)))
+  norm .= zero(eltype(norm))
 
   cohere_windows =
-    collect(windowing(cr,tracks[1].params.cohere))
+    collect(windowing(cr,tracks[1].cohere))
 
   for (i,ixs) = enumerate(windows)
     best_track = argmax(dropdims(mean(Array(tracks_lp[ixs,:]),dims=1),dims=1))
@@ -153,8 +152,8 @@ function mask_helper(cr,tracks,tracks_lp,order,windows,progress)
 
     for (ti,t) in enumerate(ixs)
       resh = reshape(view(components,:,:,c,ti),1,size(y,2),size(y,3))
-      y[Axis{:time}(cohere_windows[t])] .+= resh
-      norm[Axis{:time}(cohere_windows[t])] .+= 1
+      y[cohere_windows[t],:,:] .+= resh
+      norm[cohere_windows[t],:,:] .+= 1
     end
 
     next!(progress)
@@ -163,7 +162,7 @@ function mask_helper(cr,tracks,tracks_lp,order,windows,progress)
   y ./= maximum(abs,y)
   y .*= cr
 
-  cortical(y,ShammaModel.Params(cr))
+  y
 end
 
 

@@ -24,7 +24,7 @@ function Tracking(C,::Val{:prior};tc=1s,source_prior=nothing,
                   freq_prior=nothing, max_sources=4,
                   normalize=false,min_norm=Inf)
   checknorm(normalize,min_norm)
-  PriorTracking(AuditoryModel.Params(C),tc,source_prior,freq_prior,max_sources,
+  PriorTracking(getmeta(C),tc,source_prior,freq_prior,max_sources,
                 min_norm)
 end
 
@@ -70,8 +70,8 @@ function track(perm::PermutedCoherence,params::PriorTracking,progressbar=true,
 
   track = TrackedSources(size(C_,1)*size(C_,2),params)
 
-  C_out = similar(C_,size(C_,1),size(C_,2)...,params.max_sources,size(C_,4))
-  C_out .= 0
+  C_out = zeros(eltype(C_),size(C_,1),size(C_,2)...,
+                params.max_sources,size(C_,4))
   source_out = copy(C_out)
   sourceS_out = copy(C_out)
 
@@ -113,10 +113,10 @@ function track(perm::PermutedCoherence,params::PriorTracking,progressbar=true,
 
 
   tracking =
-    SourceTracking(params,AxisArray(C_out,AxisArrays.axes(C,2),
-                                    AxisArrays.axes(C,3),
-                                    Axis{:component}(1:params.max_sources),
-                                    AxisArrays.axes(C,1)))
+    MetaArray(params,AxisArray(C_out,AxisArrays.axes(C,2),
+                                     AxisArrays.axes(C,3),
+                                     Axis{:component}(1:params.max_sources),
+                                     AxisArrays.axes(C,1)))
   (tracking,lp_out)
 end
 
