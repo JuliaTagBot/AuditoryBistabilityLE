@@ -5,6 +5,7 @@ using Parameters
   normalize::Bool = true
   maxiter::Int = 2000
   tol::Float64 = 1e-4
+  warn_converge::Bool = true
 end
 CoherenceMethod(::Type{Val{:nmf}},params) = CoherenceNMF(;params...)
 
@@ -38,7 +39,7 @@ function with_method(foreach_window,method::CoherenceNMF,K)
     permutedims(y,[2:ndims(window)-1;1])
   end
 
-  if convergence_count > 0
+  if convergence_count > 0 && method.warn_converge
     percent = round(Int,10000convergence_count / total_count)/100
     if percent > 0
       @info("$percent% of frames failed to fully converge to a solution.")
