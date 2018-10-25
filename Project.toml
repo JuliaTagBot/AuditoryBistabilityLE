@@ -30,7 +30,7 @@ TOML = "191fdcea-f9f2-43e0-b922-d33f71e2abc3"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
-julia = "0.7"
+julia = "0.7-1.0"
 AxisArrays = "0.3.0"
 Combinatorics = "0.7.0"
 DSP = "0.5.1"
