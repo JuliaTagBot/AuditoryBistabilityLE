@@ -15,8 +15,8 @@ function bistable_model(stim_count::Int,params,settings;kwds...)
 
   # cache stimulus generation
   spect = get!(cache, [stim_count,params[:Δt],params[:Δf],params[:f]]) do 
-    stim = ab(params[:Δt]/2,params[:Δt]/2,1,stim_count,params[:f],params[:Δf]) |>
-      normpower |> amplify(-10dB)
+    stim = stimulus(params[:Δt],stim_count,params[:f],params[:Δf];
+                    settings.stimulus...) |> normpower |> amplify(-10dB)
     audiospect(stim,progressbar=false; settings.freqs.analyze...)
   end
 
