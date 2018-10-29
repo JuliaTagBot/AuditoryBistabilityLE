@@ -9,12 +9,13 @@ function as_namedtuple(xs::Dict{<:AbstractString,<:Any})
   NamedTuple{(kt...,)}(as_namedtuple.(vt))
 end
 
-const cache = Dict{Vector{<:Number},AbstractMatrix}()
+const cache = Dict{Vector{Union{<:Number,String}},AbstractMatrix}()
 function bistable_model(stim_count::Int,params,settings;kwds...)
   settings = read_settings(settings)
 
   # cache stimulus generation
-  spect = get!(cache, [stim_count,params[:Δt],params[:Δf],params[:f]]) do 
+  spect = get!(cache, [[stim_count,params[:Δt],params[:Δf],params[:f]];
+                       collect(values(settings.stimulus))]) do 
     stim = stimulus(params[:Δt],stim_count,params[:f],params[:Δf];
                     settings.stimulus...) |> normpower |> amplify(-10dB)
     audiospect(stim,progressbar=false; settings.freqs.analyze...)
@@ -74,10 +75,11 @@ function bistable_model(spect::AbstractMatrix,params,settings;interactive=false,
   spmask = audiospect(crmask,progressbar=progressbar)
 
   # compute the ratio of the mask's and the scene's bandwidth
-  ratio = bandwidth_ratio(spmask, spect; settings.bandwidth_ratio...)
+  ratio,sband,tband = bandwidth_ratio(spmask, spect; settings.bandwidth_ratio...)
 
   if intermediate_results
-    (percepts=(ratio=ratio,counts=percept_lengths(ratio,settings)),
+    (percepts=(ratio=ratio,sband=sband,tband=tband,
+               counts=percept_lengths(ratio,settings)),
      primary_source=spmask,
      sources=merge((tracks=tracks,),track_lp_at),
      cohere=C,

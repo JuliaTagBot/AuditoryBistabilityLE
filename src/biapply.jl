@@ -42,7 +42,7 @@ end
 function bandwidth_ratio(spmask::AbstractMatrix, sp::AbstractMatrix,
                          settings)
   settings = read_settings(settings)
-  ratio = bandwidth_ratio(spmask, sp; settings.bandwidth_ratio...)
+  bandwidth_ratio(spmask, sp; settings.bandwidth_ratio...)
 end
 
 function percept_lengths(spmask::AbstractMatrix, sp::AbstractMatrix,
@@ -53,13 +53,16 @@ end
 
 function bandwidth_ratio(spmask, sp; threshold=1.5,
                          window_ms=500,window=window_ms*ms,
+                         full_band_ratio=2,
                          delta_ms=250,delta=delta_ms*ms)
-  fullband = estimate_bandwidth(sp,window=window,delta=delta,
+  fullband = estimate_bandwidth(sp,window=full_band_ratio*window,delta=delta,
                                 threshold=threshold)
   maskband = estimate_bandwidth(spmask,window=window,delta=delta,
                                 threshold=threshold)
+  fullband = interpolate_times(fullband,to=maskband)
 
-  AxisArray(maskband ./ fullband,AxisArrays.axes(fullband,Axis{:time}))
+  AxisArray(maskband ./ fullband,AxisArrays.axes(fullband,Axis{:time})),
+    maskband, fullband
 end
 
 function meanabs(A,n)

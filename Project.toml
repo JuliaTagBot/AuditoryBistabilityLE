@@ -1,7 +1,7 @@
 name = "AuditoryBistabilityLE"
 uuid = "7e25a372-ade5-11e8-17af-a30e5a9e2c28"
 authors = ["David Little <david.frank.little@gmail.com>"]
-version = "0.4.1"
+version = "0.4.2"
 
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
@@ -30,7 +30,7 @@ TOML = "191fdcea-f9f2-43e0-b922-d33f71e2abc3"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
-julia = "0.7-1.0"
+julia = ">=0.7,1.0"
 AxisArrays = "0.3.0"
 Combinatorics = "0.7.0"
 DSP = "0.5.1"
@@ -43,7 +43,6 @@ NMF = "0.4.0"
 Parameters = "0.10.1"
 ProgressMeter = "0.6.0"
 Requires = "0.5.2"
-ShammaModel = "0.2.6"
 SpecialFunctions = "0.7.1"
 StatsFuns = "0.7.0"
 TOML = "0.4.0"
