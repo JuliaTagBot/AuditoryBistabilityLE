@@ -66,7 +66,7 @@ R"""
 """
 end
 
-function rplot(C::Coherence{M,T,4} where {M,T};λ_digits=:automatic,
+function rplot(C::Coherence{<:Any,<:Any,<:Any,4} where {M,T};λ_digits=:automatic,
                kwds...)
   C = sort_components(C)
   @assert axisdim(C,Axis{:time}) == 1
