@@ -25,7 +25,7 @@ function mergelengths(lens,vals,threshold)
 end
 
 function interpolate_times(x;to) 
-  result = similar(to)
+  result = similar(to,float(eltype(to)))
   result .= interpolate_times(x,times(x),times(to))
 end
 
