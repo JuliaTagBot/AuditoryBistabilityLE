@@ -18,10 +18,11 @@ end
 
 percept_lengths(ratio::AbstractVector,settings) = percept_lengths(ratio;settings.percept_lengths...)
 
-function estimate_bandwidth(sp;threshold=0.25,window=500ms,delta=250ms)
+function estimate_bandwidth(sp;level_threshold=0.9,threshold=0.25,
+                            window=500ms,delta=250ms)
   map_windowing(sp,length=window,step=delta) do window
-    levels = dropdims(mapslices(x -> quantile(x,0.9),Array(window),dims=1),
-                      dims=1)
+    levels = dropdims(mapslices(x -> quantile(x,level_threshold),
+                                Array(window),dims=1), dims=1)
     thresh_level = quantile(levels,1 - threshold/length(levels))
     over = findall(levels .> thresh_level)
     maximum(over) - minimum(over) + 1
@@ -55,10 +56,14 @@ function bandwidth_ratio(spmask, sp; threshold=1.5,
                          window_ms=500,window=window_ms*ms,
                          full_band_ratio=2,
                          delta_ms=250,delta=delta_ms*ms)
-  fullband = estimate_bandwidth(sp,window=full_band_ratio*window,delta=delta,
+  @show full_band_ratio
+  fullband = estimate_bandwidth(sp,window=window,delta=delta,
                                 threshold=threshold)
   maskband = estimate_bandwidth(spmask,window=window,delta=delta,
                                 threshold=threshold)
+  fullband = map_windowing(maximum,fullband,length=window*full_band_ratio,
+                           step=delta)
+  
   fullband = interpolate_times(fullband,to=maskband)
 
   AxisArray(maskband ./ fullband,AxisArrays.axes(fullband,Axis{:time})),
