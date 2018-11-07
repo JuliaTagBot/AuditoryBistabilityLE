@@ -1,7 +1,7 @@
 name = "AuditoryBistabilityLE"
 uuid = "7e25a372-ade5-11e8-17af-a30e5a9e2c28"
 authors = ["David Little <david.frank.little@gmail.com>"]
-version = "0.4.4"
+version = "0.4.5"
 
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
