@@ -30,8 +30,8 @@ TOML = "191fdcea-f9f2-43e0-b922-d33f71e2abc3"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
-julia = ">=0.7,1.0"
 AxisArrays = ">=0.3.0,<1.0"
+ShammaModel = ">=0.2.6,<1.0"
 Combinatorics = ">=0.7.0,<1.0"
 DSP = ">=0.5.1,<1.0"
 DataFrames = ">=0.14.0,<1.0"
@@ -47,6 +47,7 @@ SpecialFunctions = ">=0.7.1,<1.0"
 StatsFuns = ">=0.7.0,<1.0"
 TOML = ">=0.4.0,<1.0"
 Unitful = ">=0.12.0,<1.0"
+julia = ">=0.7,1.0"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
