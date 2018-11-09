@@ -18,6 +18,7 @@ function bistable_model(stim_count::Int,params,settings;kwds...)
                        collect(values(settings.stimulus))]) do 
     stim = stimulus(params[:Δt],stim_count,params[:f],params[:Δf];
                     settings.stimulus...) |> normpower |> amplify(-10dB)
+    @info "Stimulus is $(maximum(domain(stim))) seconds long."
     audiospect(stim,progressbar=false; settings.freqs.analyze...)
   end
 
