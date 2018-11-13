@@ -9,9 +9,16 @@ function as_namedtuple(xs::Dict{<:AbstractString,<:Any})
   NamedTuple{(kt...,)}(as_namedtuple.(vt))
 end
 
+read_params(x) = x
+function read_params(x::DataFrame)
+  @assert size(x,1) == 1 "Only a single row of parameters can be provided."
+  Dict(k => params[1,k] for k in names(params))
+end
+
 const cache = Dict{Vector{Union{<:Number,String}},AbstractMatrix}()
 function bistable_model(stim_count::Int,params,settings;kwds...)
   settings = read_settings(settings)
+  params = read_params(params)
 
   # cache stimulus generation
   spect = get!(cache, [[stim_count,params[:Δt],params[:Δf],params[:f]];
@@ -76,7 +83,8 @@ function bistable_model(spect::AbstractMatrix,params,settings;interactive=false,
   spmask = audiospect(crmask,progressbar=progressbar)
 
   # compute the ratio of the mask's and the scene's bandwidth
-  ratio,sband,tband = bandwidth_ratio(spmask, spect; settings.bandwidth_ratio...)
+  ratio,sband,tband = bandwidth_ratio(spmask, spect[:,startHz .. stopHz]; 
+                                      settings.bandwidth_ratio...)
 
   if intermediate_results
     (percepts=(ratio=ratio,sband=sband,tband=tband,
