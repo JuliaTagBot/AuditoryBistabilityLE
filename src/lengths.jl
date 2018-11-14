@@ -32,3 +32,18 @@ function percept_lengths(counts; threshold = 0.45,
   mergelengths(slens,vals,ustrip(uconvert(s,min_length)))
 end
 
+function percept_lengths(spmask::AbstractMatrix, sp::AbstractMatrix,
+                         settings)
+  ratio = bandwidth_ratio(spmask, sp, settings)
+  percept_lengths(ratio, settings)
+end
+
+function percept_lengths(result::NamedTuple,settings)
+  settings = read_settings(settings)
+  ratio = bandwidth_ratio(result,settings)
+  percept_lengths(ratio,settings)
+end
+
+percept_lengths(ratio::AbstractVector,settings) =
+  percept_lengths(ratio;settings.percept_lengths...)
+
