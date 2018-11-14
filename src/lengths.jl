@@ -1,4 +1,4 @@
-export interpolate_times, percept_lengths
+export percept_lengths
 
 function findlengths(x)
   indices = [1; findall(diff(x) .!= 0) .+ 1; length(x)+1]
@@ -24,29 +24,29 @@ function mergelengths(lens,vals,threshold)
   mergedlen[1:i], mergedval[1:i]
 end
 
-function interpolate_times(x;to) 
-  result = similar(to,float(eltype(to)))
-  result .= interpolate_times(x,times(x),times(to))
-end
+# interpolate_times(x::MetaUnion{AxisArray};to) = 
+#   interpolate_times(x,times(x),times(to),dim=axisdim(x,Axis{:time}))
 
-function interpolate_times(x,times::AbstractVector,to::AbstractVector)
-  @assert length(x) == length(times)
-  y = Array{float(eltype(x))}(undef,length(to))
-  x1 = 1
-  for i in eachindex(y)
-    while x1 <= length(times) && times[x1] < to[i]; x1+=1; end
-    if x1 == 1
-      y[i] = x[1]
-    elseif x1 > length(times)
-      y[i] = x[end]
-    else
-      a,b = x[x1 - 1],x[x1]
-      k,h = to[i] - times[x1-1], times[x1] - to[i]
-      y[i] = a*h/(k+h) + b*k/(k+h)
-    end
-  end
-  y
-end
+# function interpolate_times(x::AbstractArray, times::AbstractVector,
+#                            to::AbstractVector; dim=ndims(x))
+#   @assert size(x)[dim] == length(times)
+#   y = similar(x,float(eltype(x)),(size(x)[1:dim-1]...,length(to),
+#                                   size(x)[dim:end]...))
+#   x1 = 1
+#   for i in 1:size(y,dim)
+#     while x1 <= length(times) && times[x1] < to[i]; x1+=1; end
+#     if x1 == 1
+#       selectdim(y,dim,i) .= selectdim(x,dim,1)
+#     elseif x1 > length(times)
+#       selectdim(y,dim,i) .= selectdim(x,dim,size(x,dim))
+#     else
+#       a,b = selectdim(x,dim,x1-1), selectdim(x,dim,x1)
+#       k,h = to[i] - times[x1-1], times[x1] - to[i]
+#       selectdim(y,dim,i) .= a.*(h/(k+h)) .+ b.*(k/(k+h))
+#     end
+#   end
+#   y
+# end
 
 function percept_lengths(counts; threshold = 0.45, 
                          min_length_ms=750, min_length=min_length_ms*ms)
