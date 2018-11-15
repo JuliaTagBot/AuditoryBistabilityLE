@@ -44,13 +44,11 @@ function bandwidth_ratio(spmask, sp; threshold=1.5,
   @assert freqs(spmask) == freqs(sp) "Frequency axes are not equal."
   @assert times(spmask) == times(sp) "Time axes are not equal."
 
-  println("fullchan")
   fullchan = dominant_channels(sp,window=window*full_band_ratio,
                                delta=delta,threshold=threshold,
                                level_threshold=level_threshold,
                                thresh_ratio=thresh_ratio)
 
-  println("maskchan")
   maskchan = dominant_channels(spmask,window=window,delta=delta,
                                threshold=threshold,
                                level_threshold=level_threshold,
