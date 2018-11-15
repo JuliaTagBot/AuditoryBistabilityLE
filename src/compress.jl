@@ -12,13 +12,10 @@ compress_axes(x::MetaUnion{AxisArray}) = AxisArrays.axes(x)
 compress_axes(x) = nothing
 
 function compress(x::AbstractMatrix)
-  quantized = Array{UInt8}(undef,prod(size(x)))
-  mx = maximum(x)
-  for (i,ii) in enumerate(eachindex(x))
-    quantized[i] = floor(UInt,max(0,x[ii]/mx)*typemax(UInt8))
-  end
+  quantized = Array{UInt8}(undef,size(x))
+  @. quantized = floor(UInt8,max(0,x/$maximum(x))*typemax(UInt8))
   CompressedMask(size(x), compress_axes(x),
-                 transcode(ZlibCompressor,quantized))
+                 transcode(ZlibCompressor,vec(quantized)))
 end
 
 withaxes(x,axes) = AxisArray(x, axes...)
