@@ -1,7 +1,7 @@
 using Unitful
 using SampledSignals
 
-export aba_, ab, stimulus
+export aba_, ab, stimulus, audiospect_stimulus
 
 const sr = 8000
 
@@ -20,13 +20,32 @@ function ramp(xs,len)
   xs
 end
 
-# TODO: add a test in sampled signals for .^2 and other power operators, as
-# there seems to be a bug
 normpower(x) = x ./ sqrt.(mean(x.*x,dims=1))
 amplify(ratio) = x -> x.*ratio
 
-function stimulus(total_len,repeats,freq,delta;tone_len_fraction=0.5,pattern="ab",
-                  ramp_len_ms=0,ramp_len=ramp_len_ms*ms)
+const stim_cache = Dict{Vector{Union{<:Number,String}},AbstractMatrix}()
+function audiospect_stimulus(params,settings;cache=false)
+  settings = read_settings(settings)
+  params = read_params(params)
+  if cache
+    spect = get!(stim_cache,[[params[:Δt],params[:Δf],params[:f]];
+                             collect(values(settings.stimulus))]) do
+      audiospect_stimulus_(params,settings)
+    end
+  else
+    audiospect_stimulus_(params,settings)
+  end
+end
+
+function audiospect_stimulus_(params,settings)
+    stim = stimulus(params[:Δt],params[:f],params[:Δf];
+                    settings.stimulus...) |> normpower |> amplify(-10dB)
+    @info "Stimulus is $(maximum(domain(stim))) seconds long."
+    audiospect(stim,progressbar=false; settings.freqs.analyze...)
+end
+
+function stimulus(total_len,freq,delta;repeats=10,tone_len_fraction=0.5,
+                  pattern="ab",ramp_len_ms=0,ramp_len=ramp_len_ms*ms)
   @assert ramp_len isa Unitful.Time
   if pattern == "ab"
     ab(tone_len_fraction*total_len,(1-tone_len_fraction)*total_len,1,

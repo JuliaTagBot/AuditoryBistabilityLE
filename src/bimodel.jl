@@ -1,35 +1,10 @@
 export bistable_model, as_namedtuple
 
-read_settings(x) = as_namedtuple(x)
-read_settings(x::String) = as_namedtuple(TOML.parsefile(x))
-as_namedtuple(xs) = xs
-function as_namedtuple(xs::Dict{<:AbstractString,<:Any})
-  kt = ((Symbol(x) for x in keys(xs))...,)
-  vt = (values(xs)...,)
-  NamedTuple{(kt...,)}(as_namedtuple.(vt))
-end
-
-read_params(x) = x
-function read_params(x::DataFrame)
-  @assert size(x,1) == 1 "Only a single row of parameters can be provided."
-  Dict(k => params[1,k] for k in names(params))
-end
-
-const cache = Dict{Vector{Union{<:Number,String}},AbstractMatrix}()
-function bistable_model(stim_count::Int,params,settings;kwds...)
+function bistable_model(params,settings;kwds...)
   settings = read_settings(settings)
   params = read_params(params)
-
-  # cache stimulus generation
-  spect = get!(cache, [[stim_count,params[:Δt],params[:Δf],params[:f]];
-                       collect(values(settings.stimulus))]) do 
-    stim = stimulus(params[:Δt],stim_count,params[:f],params[:Δf];
-                    settings.stimulus...) |> normpower |> amplify(-10dB)
-    @info "Stimulus is $(maximum(domain(stim))) seconds long."
-    audiospect(stim,progressbar=false; settings.freqs.analyze...)
-  end
-
-  bistable_model(spect,params,settings;kwds...)
+  bistable_model(audiospect_stimulus(params,settings,cache=true),
+                 params,settings;kwds...)
 end
 
 function bistable_model(stim::AbstractVector,params,settings;interactive=false,

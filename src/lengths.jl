@@ -34,13 +34,23 @@ end
 
 function percept_lengths(spmask::AbstractMatrix, sp::AbstractMatrix,
                          settings)
-  ratio = bandwidth_ratio(spmask, sp, settings)
+  settings = read_settings(settings)
+  startHz, stopHz = settings.rates.freq_limits_Hz.*Hz
+  ratio, = bandwidth_ratio(spmask, sp[:,startHz .. stopHz], settings)
   percept_lengths(ratio, settings)
+end
+
+function percept_lengths(mask,params,settings)
+  stim = audiospect_stimulus(stim_count,params,settings,cache=true)
+  percept_lengths(mask,stim,settings) 
 end
 
 function percept_lengths(result::NamedTuple,settings)
   settings = read_settings(settings)
-  ratio = bandwidth_ratio(result,settings)
+  startHz, stopHz = settings.rates.freq_limits_Hz.*Hz
+  ratio, = bandwidth_ratio(result.primary_source,
+                           result.input[:,startHz .. stopHz],
+                           settings)
   percept_lengths(ratio,settings)
 end
 
