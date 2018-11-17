@@ -1,6 +1,6 @@
 using CodecZlib
 using Statistics
-export compress, compress!, decompress
+export compress, decompress
 
 struct CompressedMask{A}
   size::Tuple{Int,Int}
@@ -26,3 +26,8 @@ function decompress(x::CompressedMask)
   withaxes(reshape(mask,x.size...), x.axes)
 end
   
+function ShammaModel.audiospect(x::CompressedMask,settings)
+  settings = read_settings(settings)
+  audiospect(decompress(x);settings.freqs.analyze...)
+end
+
