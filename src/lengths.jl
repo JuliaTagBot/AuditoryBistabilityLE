@@ -41,7 +41,7 @@ function percept_lengths(spmask::AbstractMatrix, sp::AbstractMatrix,
 end
 
 function percept_lengths(mask,params,settings)
-  stim = audiospect_stimulus(stim_count,params,settings,cache=true)
+  stim = audiospect_stimulus(params,settings,cache=true)
   percept_lengths(mask,stim,settings) 
 end
 
