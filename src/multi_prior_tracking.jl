@@ -98,8 +98,6 @@ function map_components(fn,tracks::AxisArray{<:SourceTracking},
 
   result = map(enumerate(windows)) do (i,ixs)
     best_track = argmax(dropdims(mean(Array(tracks_lp[ixs,:]),dims=1),dims=1))
-    # TODO: figure out why this isn't working and why it's
-    # returning a cartesian index now
     fn(tracks[best_track][Axis{:time}(ixs)])
   end
 
