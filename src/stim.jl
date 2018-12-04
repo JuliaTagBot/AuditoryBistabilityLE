@@ -23,12 +23,12 @@ end
 normpower(x) = x ./ sqrt.(mean(x.*x,dims=1))
 amplify(ratio) = x -> x.*ratio
 
-const stim_cache = Dict{Vector{Union{<:Number,String}},AbstractMatrix}()
+const stim_cache = Dict{Vector{Union{Number,String}},AbstractMatrix}()
 function audiospect_stimulus(params,settings;cache=false)
   settings = read_settings(settings)
   params = read_params(params)
   if cache
-    spect = get!(stim_cache,[[params[:Δt],params[:Δf],params[:f]];
+    get!(stim_cache,[[params[:Δt],params[:Δf],params[:f]];
                              collect(values(settings.stimulus))]) do
       audiospect_stimulus_(params,settings)
     end

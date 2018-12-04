@@ -16,7 +16,8 @@ function bistable_model(stim::AbstractVector,params,settings;interactive=false,
                  intermediate_results=intermediate_results)
 end
 
-function bistable_model(spect::AbstractMatrix,params,settings;interactive=false,
+function bistable_model(spect::ShammaModel.AuditorySpectrogram,params,settings;
+                        interactive=false,
                         progressbar=interactive,
                         intermediate_results=interactive)
   settings = read_settings(settings)
