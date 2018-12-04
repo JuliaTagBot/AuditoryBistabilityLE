@@ -1,7 +1,7 @@
 name = "AuditoryBistabilityLE"
 uuid = "7e25a372-ade5-11e8-17af-a30e5a9e2c28"
 authors = ["David Little <david.frank.little@gmail.com>"]
-version = "0.5.3"
+version = "0.5.4"
 
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
@@ -53,3 +53,4 @@ julia = ">=0.7,1.0"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+DataFrames = ">=0.15.0,<1.0"
