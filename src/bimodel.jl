@@ -1,8 +1,30 @@
 export bistable_model, as_namedtuple
 
+function checkparams(params)
+  checkunits(params,s,:Δt)
+  checkunits(params,Hz,:f)
+
+  checkunits(params,s,:f_τ_σ)
+  checkunits(params,s,:f_τ_m)
+  checkunits(params,s,:f_τ_a)
+  checkunits(params,s,:f_τ_x)
+
+  checkunits(params,s,:s_τ_σ)
+  checkunits(params,s,:s_τ_m)
+  checkunits(params,s,:s_τ_a)
+  checkunits(params,s,:s_τ_x)
+
+  checkunits(params,s,:t_τ_σ)
+  checkunits(params,s,:t_τ_m)
+  checkunits(params,s,:t_τ_a)
+  checkunits(params,s,:t_τ_x)
+end
+
 function bistable_model(params,settings;kwds...)
   settings = read_settings(settings)
   params = read_params(params)
+  checkparams(params)
+
   bistable_model(audiospect_stimulus(params,settings,cache=true),
                  params,settings;kwds...)
 end
@@ -21,6 +43,7 @@ function bistable_model(spect::ShammaModel.AuditorySpectrogram,params,settings;
                         progressbar=interactive,
                         intermediate_results=interactive)
   settings = read_settings(settings)
+  checkparams(params)
 
   # auditory spectrogram
   spectat = apply_bistable(spect,:freqs,params,progressbar=progressbar,

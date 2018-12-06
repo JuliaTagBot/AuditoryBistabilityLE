@@ -13,3 +13,10 @@ function read_params(x::DataFrame)
   Dict(k => x[k][1] for k in names(x))
 end
 
+function checkunits(params,unit,key)
+  try 
+    uconvert(unit,params[key]) 
+  catch e
+    error("parameter $key with value $(params[key]) incompatible with unit $unit.")
+  end
+end
