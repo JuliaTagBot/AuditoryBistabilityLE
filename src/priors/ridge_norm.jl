@@ -4,6 +4,26 @@ function rdist(;scale,freq)
   ((as,af),(bs,bf)) -> (as - bs)^2 / (scale^2) + (af - bf)^2 / (freq^2)
 end
 
+logdet_(x,n) = logdet(x)
+logdet_(x::UniformScaling,n) = n*log(abs(x.λ))
+factorize_(x) = factorize(x)
+factorize_(x::UniformScaling) = x
+
+function logpdf_mvt(v,μ,Σ,x)
+  Σ_ = factorize_(Σ)
+  d = length(x)
+  C = (lgamma((v+d)/2)) - (lgamma(v/2)+(d/2)log(v*π)) - (0.5 * (logdet_(Σ_,d)))
+  diff = abs.(μ.-x)
+  # with poorly conditioned covariances, normdiff can be negative even when the
+  # log determant is a valid, non-infinite number
+  # NOTE: this somewhat akward notation is due to some missing method
+  # definitions in the sparse matrix library (only right divide is defined)
+  normdiff = max(0,(diff'*(Σ_'\diff))[1])
+  result = C + -(v+d)/2*log(1+normdiff/v)
+  @assert !isinf(result)
+  result
+end
+
 mutable struct RidgeMultiNormalStats{T,C} <: Stats{T}
   μ::Vector{T}
   S::Vector{T}

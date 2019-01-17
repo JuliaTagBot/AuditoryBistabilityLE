@@ -77,6 +77,11 @@ function track(C::Coherence,params::MultiPriorTracking,progressbar=true,
   S = Array{SourceTracking}(undef,size(all_params,1))
   lp = Array{Array{Float64}}(undef,size(all_params,1))
 
+  # in my tests, using @Threads does not seem to help hereo This might be
+  # related to a now fixed bug in Julia
+  # (https://github.com/JuliaLang/julia/issues/17395) or it could because the
+  # operation is memory bound; in either case, I haven't gone back to test this
+  # and see if threading works any better now
   #=@Threads.threads=# for (i,(p,bias)) in collect(enumerate(all_params))
     S[i], lp[i] = track(C_,p,true,progress)
     lp[i] .+= bias
@@ -157,5 +162,3 @@ function mask_helper(cr,tracks,tracks_lp,order,windows,progress)
 
   y
 end
-
-

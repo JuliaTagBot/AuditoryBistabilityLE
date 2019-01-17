@@ -89,14 +89,14 @@ function track(perm::PermutedCoherence,params::PriorTracking,progressbar=true,
   groupings = CircularDeque{Grouping}(window+1)
   for t in eachindex(times(C))
     # find the MAP grouping of sources
-    MAPgrouping, lp_out[t] = # OLD PROFILE COUNT: 18922
+    MAPgrouping, lp_out[t] = 
       maximumby(g -> logpdf(track,view(C_,:,:,:,t:t),sumcomponents,g),
                 possible_groupings(params.max_sources,ncomponents(C)))
 
     # arrange the sources
     for (kk,i) in iterable(MAPgrouping)
       for k in kk
-        C_out[:,:,i,t] .+= C_[:,:,k,t]  # PROFILE COUNT: 2040
+        C_out[:,:,i,t] .+= C_[:,:,k,t]  
       end
     end
 
@@ -121,7 +121,7 @@ function track(perm::PermutedCoherence,params::PriorTracking,progressbar=true,
 end
 
 function sort_components(x)
-  order = sortperm(component_means(x),rev=true) # OLD PROFILE COUNT: 2313
+  order = sortperm(component_means(x),rev=true) 
   x .= x[Axis{:component}(order)]
   x
 end

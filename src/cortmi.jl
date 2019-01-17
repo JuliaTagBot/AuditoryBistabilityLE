@@ -33,14 +33,15 @@ function scale_weighting(cort,σ,c)
 end
 
 function track_weighting(tracks,σ_t,σ_p,σ_N,c)
-  # TODO: think through this more carefully if
-  # we end up keeping N
   tcs, sds, Ns = zip(axisvalues(AxisArrays.axes(tracks,Axis{:params}()))[1]...)
-  N = collect(log.(ustrip.(Ns)))
-  sd = collect(sds)
-  t = collect(log.(ustrip.(uconvert.(s,tcs))))
+
+  N = collect(log.(ustrip.(Ns))) # prior strength 
+  sd = collect(sds) # prior standard deviation
+  t = collect(log.(ustrip.(uconvert.(s,tcs)))) # prior time constant
+
   W = @. c*(1 - exp(-(sd - sd')^2 / (σ_p*log(2))^2 +
-                    -(t - t')^2 / (σ_t*log(2))^2 +
+                    # the `t` term is current always zero (see settings.toml)
+                    -(t - t')^2 / (σ_t*log(2))^2 + 
                     -(N - N')^2 / (σ_N*log(2))^2))
 
   x -> W*x

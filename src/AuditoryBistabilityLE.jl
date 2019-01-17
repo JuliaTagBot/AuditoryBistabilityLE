@@ -19,25 +19,27 @@ using ProgressMeter
 next!(x::Progress) = ProgressMeter.next!(x)
 next!(x::Nothing) = nothing
 
+# core model implementation
 include("adaptmi.jl")
 include("cortmi.jl")
+include("windowing.jl")
 include("cohere.jl")
 include("nmf.jl")
-include("simple_tracking.jl")
+include("tracking.jl")
 include("prior_tracking.jl")
 include("multi_prior_tracking.jl")
+
+# all the functions that use the model implementation to do stuff
 include("util.jl")
 include("stim.jl")
-include("peaks.jl")
 include("bandwidth_ratio.jl")
 include("lengths.jl")
 include("biapply.jl")
 include("bimodel.jl")
 include("compress.jl")
-include("plot_axes.jl")
 
-# include(joinpath(@__DIR__,"rplots.jl"))
-# include(joinpath(@__DIR__,"rplots.jl"))
+# visualization
+include("plot_axes.jl")
 function __init__()
   @require RCall="6f49c342-dc21-5d91-9882-a32aef131414" include("rplots.jl")
 end
