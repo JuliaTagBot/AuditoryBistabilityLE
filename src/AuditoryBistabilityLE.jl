@@ -8,6 +8,7 @@ using SparseArrays
 using SpecialFunctions
 using TOML
 using MetaArrays
+using Unitful
 
 import ShammaModel: Δt, Δf, times, freqs, scales, rates
 

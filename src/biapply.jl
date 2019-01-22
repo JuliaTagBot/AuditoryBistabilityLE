@@ -1,5 +1,6 @@
 using ShammaModel
 using AxisArrays
+using DSP
 const reasonable_response_maximum = 100
 
 function bound(x,min,max)

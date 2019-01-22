@@ -16,7 +16,7 @@ sig(x) = 1/(1+exp(-10(x-0.5)))
 
   c_m::Float64 = 10
   τ_m::typeof(1.0s) = 50ms
-  W_m::I = inhibit_uniform
+  W_m::I = identity
 
   τ_σ::typeof(1.0s) = 100ms
   c_σ::Float64 = 0.3
@@ -42,7 +42,7 @@ function adaptmi(x,params::AdaptMI,progressbar=true)
   x̃ = similar(y) # (this is the smoothed version of x)
 
   # temporary, single time slice variables
-  x̃_t = zeros(y[time(1)])
+  x̃_t = zero(y[time(1)])
   y_t = copy(x̃_t)
   a_t = copy(x̃_t)
   m_t = copy(x̃_t)
@@ -86,8 +86,7 @@ function drift(x,params::AdaptMI,along_axes=typeof.(AxisArayys.axes(x)),progress
   time = Axis{:time}
 
   y = similar(x)
-  temp = zero(x[time(1),(ax(1) for ax in along_axes)...])
-  σ_t = zeros(temp)
+  σ_t = zero(x[time(1),(ax(1) for ax in along_axes)...])
   dims = size(σ_t)
   progress = progressbar ? Progress(desc="Drift: ",ntimes(y)) : nothing
   for t in Base.axes(times(y),1)
