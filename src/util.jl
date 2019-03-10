@@ -8,6 +8,11 @@ function as_namedtuple(xs::Dict{<:AbstractString,<:Any})
 end
 
 read_params(x) = x
+
+function read_params(x::DataFrameRow)
+  Dict(k => x[k][1] for k in names(x))
+end
+
 function read_params(x::DataFrame)
   @assert size(x,1) == 1 "Only a single row of parameters can be provided."
   Dict(k => x[k][1] for k in names(x))

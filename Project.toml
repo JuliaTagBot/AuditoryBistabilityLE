@@ -1,7 +1,7 @@
 name = "AuditoryBistabilityLE"
 uuid = "7e25a372-ade5-11e8-17af-a30e5a9e2c28"
 authors = ["David Little <david.frank.little@gmail.com>"]
-version = "0.5.7"
+version = "0.5.8"
 
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
@@ -34,7 +34,7 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 AxisArrays = ">=0.3.0,<1.0"
 Combinatorics = ">=0.7.0,<1.0"
 DSP = ">=0.5.1,<1.0"
-DataFrames = ">=0.14.0,<1.0"
+DataFrames = ">=0.15.0,<1.0"
 DataStructures = ">=0.14.0,<1.0"
 Distributions = ">=0.16.4,<1.0"
 MacroTools = ">=0.4.4,<1.0"
