@@ -61,6 +61,9 @@ function bistable_model(spect::ShammaModel.AuditorySpectrogram,params,settings;
   # cortical rates
   csa = csat.result
   crs = cortical(csa, progressbar=progressbar; settings.rates...)
+  
+  # TODO: add additional rate filters here; they need to be treated
+  # differently from the "normal" rate filters
 
   # temporal coherence (simultaneous grouping)
   C = cohere(crs, method=:nmf, progressbar=progressbar;
