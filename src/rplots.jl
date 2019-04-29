@@ -1,7 +1,10 @@
 using .RCall
 import ShammaModel: rplot, raster_plot
 export rplot, scale_plot, cohere_plot
-R"library(ggplot2)"
+
+R"""
+library(ggplot2)
+"""
 
 function titlefn(λ,λ_digits,components)
   @assert !any(isnan,λ)
