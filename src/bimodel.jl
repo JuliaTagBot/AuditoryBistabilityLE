@@ -20,6 +20,13 @@ function checkparams(params)
   checkunits(params,s,:t_τ_x)
 end
 
+function freqbound(x;freq_limits=())
+  if length(freq_limits) > 0
+    startHz,stopHz = asHz.(freq_limits)
+    y = y[Axis{:freq}(startHz .. stopHz)]
+  end
+end
+
 function bistable_model(params,settings;kwds...)
   settings = read_settings(settings)
   params = read_params(params)
@@ -58,12 +65,12 @@ function bistable_model(spect::ShammaModel.AuditorySpectrogram,params,settings;
                         intermediate_results=intermediate_results;
                         settings.scales.bistable...)
 
-  # cortical rates
-  csa = csat.result
-  crs = cortical(csa, progressbar=progressbar; settings.rates...)
-  
   # TODO: add additional rate filters here; they need to be treated
   # differently from the "normal" rate filters
+
+  # cortical rates
+  csa = freqbound(csat.result; settings.rates.freqbound...)
+  crs = cortical(csa, progressbar=progressbar; settings.rates...)
 
   # temporal coherence (simultaneous grouping)
   C = cohere(crs, method=:nmf, progressbar=progressbar;
