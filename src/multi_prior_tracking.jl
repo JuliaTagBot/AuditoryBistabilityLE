@@ -117,7 +117,7 @@ function mask(sp::ShammaModel.AuditorySpectrogram,
   mask(cr,tracks,tracks_lp;progressbar=progressbar,kwds...)
 end
 
-function mask(cr::ShammaModel.Cortical,
+function mask(cr::MetaUnion{AxisArray},
               tracks::AxisArray{<:SourceTracking},
               tracks_lp::AxisArray{<:Float64},
               order=1;window_ms=500,window=window_ms*ms,

@@ -20,6 +20,8 @@ pstream(p) = sum(p.counts[1][p.counts[2]]) / sum(p.counts[1])
       :t_c_a => 0, :t_c_m => 0, :t_c_σ => 0
      )
 
+    # TODO: get this function running
+
     bistable_model(10, params, "test_settings.toml", interactive=true,
                    progressbar=false)
     # uncomment to profile

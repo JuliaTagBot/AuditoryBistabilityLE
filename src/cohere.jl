@@ -67,7 +67,7 @@ function nunits(params::CParams,x)
   end
 end
 
-cohere(x::ShammaModel.Cortical;progressbar=true,params...) =
+cohere(x::MetaUnion{AxisArray};progressbar=true,params...) =
   cohere(x,CParams(x;params...),progressbar)
 
 function cohere_progress(progressbar,x,params)
