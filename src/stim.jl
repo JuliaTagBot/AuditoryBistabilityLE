@@ -41,7 +41,8 @@ function audiospect_stimulus_(params,settings)
   stim = stimulus(params[:Δt],params[:f],params[:Δf];
                   settings.stimulus...) |> normpower |> amplify(-10dB)
   @info "Stimulus is $(maximum(domain(stim))) seconds long."
-  audiospect(stim,progressbar=false; settings.freqs.analyze...)
+  as = Audiospect(;settings.freqs.analyze...)
+  filt(as,stim,progressbar=false)
 end
 
 function stimulus(total_len,freq,delta;repeats=10,tone_len_fraction=0.5,

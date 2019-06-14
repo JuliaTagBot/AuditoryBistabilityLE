@@ -40,7 +40,8 @@ function bistable_model(stim::AbstractVector,params,settings;interactive=false,
                         progressbar=interactive,
                         intermediate_results=interactive)
   settings = read_settings(settings)
-  spect = audiospect(stim,progressbar=progressbar; settings.freqs.analyze...)
+  as = Audiospect(;settings.freqs.analyze...)
+  spect = filt(as,stim,progressbar=progressbar)
   bistable_model(spect,params,settings;progressbar=progressbar,
                  intermediate_results=intermediate_results)
 end
@@ -59,8 +60,9 @@ function bistable_model(spect::ShammaModel.AuditorySpectrogram,params,settings;
   specta = spectat.result
 
   # cortical scales
-  cs = cortical(specta, progressbar=progressbar; settings.scales.analyze...)
-  csclean = cortical(spect, progressbar=progressbar; settings.scales.analyze...)
+  scalef = scalefilter(;settings.scales.analyze...)
+  cs = filter(scalef, specta)
+  csclean = filter(scalef, spect)
   csat = apply_bistable(cs,:scales,params,progressbar=progressbar,
                         intermediate_results=intermediate_results;
                         settings.scales.bistable...)
@@ -69,8 +71,9 @@ function bistable_model(spect::ShammaModel.AuditorySpectrogram,params,settings;
   # differently from the "normal" rate filters
 
   # cortical rates
+  ratef = ratefilter(;settings.rates...)
   csa = freqbound(csat.result; settings.rates.freqbound...)
-  crs = cortical(csa, progressbar=progressbar; settings.rates...)
+  crs = filter(ratef, csa)
 
   # temporal coherence (simultaneous grouping)
   C = cohere(crs, method=:nmf, progressbar=progressbar;
@@ -89,7 +92,7 @@ function bistable_model(spect::ShammaModel.AuditorySpectrogram,params,settings;
   # compute the mask for the primary source
   startHz, stopHz = settings.rates.freq_limits_Hz.*Hz
   crmask = mask(csclean[:,:,startHz .. stopHz],tracks,track_lp;settings.mask...)
-  spmask = audiospect(crmask,progressbar=progressbar)
+  spmask = filt(inv(scalef),crmask)
 
   # compute the ratio of the mask's and the scene's bandwidth
   ratio,sband,tband = bandwidth_ratio(spmask, spect[:,startHz .. stopHz]; 

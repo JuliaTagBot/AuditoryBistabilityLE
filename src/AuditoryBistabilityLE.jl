@@ -1,5 +1,6 @@
 module AuditoryBistabilityLE
 using ShammaModel
+using DSP
 using DataFrames
 using Requires
 using Statistics
