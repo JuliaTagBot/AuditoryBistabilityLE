@@ -1,3 +1,5 @@
+export read_settings
+
 read_settings(x) = as_namedtuple(x)
 read_settings(x::String) = as_namedtuple(TOML.parsefile(x))
 as_namedtuple(xs) = xs

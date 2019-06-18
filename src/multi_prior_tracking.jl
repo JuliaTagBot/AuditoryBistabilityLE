@@ -120,8 +120,8 @@ end
 function mask(cr::MetaUnion{AxisArray},
               tracks::AxisArray{<:SourceTracking},
               tracks_lp::AxisArray{<:Float64},
-              order=1;window_ms=500,window=window_ms*ms,
-              delta_ms=250,delta=delta_ms*ms,progressbar=false)
+              order=1;window=500ms,
+              delta=250ms,progressbar=false)
 
   @assert axisdim(cr,Axis{:time}) == 1
   @assert axisdim(cr,Axis{:scale}) == 2

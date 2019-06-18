@@ -1,9 +1,11 @@
 
 using AxisArrays
 
+# TODO: fix unitful values here, so we can accept implicit seconds
 windowing(x,dim=timedim(x);kwds...) = windowing(hastimes(x),x,dim;kwds...)
 map_windowing(fn,x,dim=timedim(x);kwds...) =
   map_windowing(fn,hastimes(x),x,dim;kwds...)
+
 function map_windowing(fn,::HasTimes,x,dim;step=nothing,flatten=false,kwds...)
   windows = windowing(x,dim;step=step,kwds...)
   xs = map(windows) do ixs

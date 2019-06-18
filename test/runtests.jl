@@ -5,6 +5,10 @@ using SampledSignals
 using TOML
 using LinearAlgebra
 using Statistics
+using JLD2
+using FileIO
+using DataFrames
+using Unitful
 
 N = 50
 
@@ -12,17 +16,14 @@ pstream(p) = sum(p.counts[1][p.counts[2]]) / sum(p.counts[1])
 
 @testset "Stremaing Bistability" begin
   @testset "Basic Streaming" begin
-    params = Dict(
-      :Δt         => 240ms, :Δf        => 3,
-      :f          => 500Hz, 
-      :f_c_a => 0, :f_c_m => 0, :f_c_σ => 0,
-      :s_c_a => 0, :s_c_m => 0, :s_c_σ => 0,
-      :t_c_a => 0, :t_c_m => 0, :t_c_σ => 0
-     )
+    params = load("object_test_params.jld2")["params"]
 
     # TODO: get this function running
 
-    bistable_model(10, params, "test_settings.toml", interactive=true,
+    settings = TOML.parsefile("test_settings.toml")
+    settings["stimulus"]["repeats"] = 10
+
+    bistable_model(params, settings, interactive=true,
                    progressbar=false)
     # uncomment to profile
     # @time bistable_model(100, params, "test_settings.toml", interactive=true,

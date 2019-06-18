@@ -48,13 +48,12 @@ end
 ShammaModel.frame_length(params::CParams,x) =
   max(1,floor(Int,params.delta / Δt(x)))
 
-function CParams(x;ncomponents=1,window_ms=1000,window=window_ms*ms,
-                 delta_ms=10,delta=delta_ms*ms,
-                 method=:nmf,skipframes=0,method_kwds...)
+function CParams(x;ncomponents=1,window=1000ms,
+                 delta=10ms,method=:nmf,skipframes=0,method_kwds...)
   method = CoherenceMethod(Val{method},method_kwds)
 
   CParams(getmeta(x), ncomponents, skipframes,
-          convert(typeof(1.0s),window), convert(typeof(1.0s),delta), method)
+          convert(typeof(1.0s),asseconds(window)), convert(typeof(1.0s),asseconds(delta)), method)
 end
 
 windowing(x,params::CParams) =

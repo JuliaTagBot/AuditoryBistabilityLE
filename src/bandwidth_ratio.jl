@@ -36,11 +36,11 @@ function bandwidth_ratio(spmask::AbstractMatrix, sp::AbstractMatrix,
 end
 
 function bandwidth_ratio(spmask, sp; threshold=1.5,
-                         window_ms=500,window=window_ms*ms,
+                         window=500ms,
                          full_band_ratio=2,
                          level_threshold=0.9,
                          thresh_ratio=1.0,
-                         delta_ms=250,delta=delta_ms*ms)
+                         delta=250ms)
   @assert freqs(spmask) == freqs(sp) "Frequency axes are not equal."
   @assert times(spmask) == times(sp) "Time axes are not equal."
 
