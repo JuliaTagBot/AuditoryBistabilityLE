@@ -42,18 +42,17 @@ function audiospect_stimulus_(params,settings)
                   settings.stimulus...) |> normpower |> amplify(-10dB)
   @info "Stimulus is $(maximum(domain(stim))) seconds long."
   as = Audiospect(;settings.freqs.analyze...)
-  filt(as,stim,progressbar=false)
+  filt(as,stim,false)
 end
 
 function stimulus(total_len,freq,delta;repeats=10,tone_len_fraction=0.5,
                   pattern="ab",ramp_len=0ms)
-  @assert ramp_len isa Unitful.Time
   if pattern == "ab"
     ab(tone_len_fraction*total_len,(1-tone_len_fraction)*total_len,1,
-       repeats,freq,delta;ramp_len=ramp_len)
+       repeats,freq,delta;ramp_len=asseconds(ramp_len))
   elseif pattern == "aba_"
     aba_(tone_len_fraction*total_len,(1-tone_len_fraction)*total_len,
-         repeats,freq,delta;ramp_len=ramp_len)
+         repeats,freq,delta;ramp_len=asseconds(ramp_len))
   else
     error("Unexpected stimulus pattern '$pattern'")
   end

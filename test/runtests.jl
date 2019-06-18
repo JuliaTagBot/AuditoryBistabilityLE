@@ -23,8 +23,8 @@ pstream(p) = sum(p.counts[1][p.counts[2]]) / sum(p.counts[1])
     settings = TOML.parsefile("test_settings.toml")
     settings["stimulus"]["repeats"] = 10
 
-    bistable_model(params, settings, interactive=true,
-                   progressbar=false)
+    @test bistable_model(params, settings, interactive=true,
+                   progressbar=false) != false
     # uncomment to profile
     # @time bistable_model(100, params, "test_settings.toml", interactive=true,
     #                      progressbar=true)
@@ -33,11 +33,12 @@ pstream(p) = sum(p.counts[1][p.counts[2]]) / sum(p.counts[1])
     # (not at immediate concern, but should be present for the final
     # mod)
     params[:Δf] = 12
-    df12 = bistable_model(50, params, "test_settings.toml", 
+    settings["stimulus"]["repeats"] = 50
+    df12 = bistable_model(params, "test_settings.toml", 
                           interactive=true, progressbar=true)
 
     params[:Δf] = 3
-    df3 = bistable_model(50, params, "test_settings.toml", interactive=true,
+    df3 = bistable_model(params, "test_settings.toml", interactive=true,
                          progressbar=true)
 
     @test pstream(df12.percepts) > 0.9

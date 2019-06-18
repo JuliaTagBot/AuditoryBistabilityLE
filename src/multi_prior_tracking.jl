@@ -11,12 +11,11 @@ using Base.Iterators: product
   min_norm::Float64 = Inf
   normalize::Bool = false
 end
-function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
-                  time_constants=time_constants_s*s,
+function Tracking(C,::Val{:multi_prior};
+                  time_constants=[4s],
                   time_constant_bias=zeros(length(time_constants)),
                   source_prior_sds,
-                  source_prior_strengths_s=[1.0],
-                  source_prior_strengths=source_prior_strengths_s.*s,
+                  source_prior_strengths=[1.0s],
                   source_prior_sd_bias=zeros(length(source_prior_sds)),
                   source_prior_strength_bias=
                     zeros(length(source_prior_strengths)),
@@ -26,7 +25,7 @@ function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
                   normalize=false,min_norm=Inf,
                   params...)
   checknorm(normalize,min_norm)
-  source_prior_Ns = source_prior_strengths./Δt(C)
+  source_prior_Ns = asseconds.(source_prior_strengths)./Δt(C)
   pr = product(zip(source_prior_sds, source_prior_sd_bias),
                zip(source_prior_Ns, source_prior_strength_bias))
 
@@ -47,7 +46,7 @@ function Tracking(C,::Val{:multi_prior};time_constants_s=[4],
   freq_prior = freqprior(freq_prior_bias,freq_prior_N)
   MultiPriorTracking(;cohere=getmeta(C), source_priors=source_priors,
                      freq_prior=freq_prior,
-                     time_constants=time_constants,
+                     time_constants=asseconds.(time_constants),
                      time_constant_bias=time_constant_bias,
                      normalize=normalize,min_norm=min_norm,
                      params...)

@@ -1,5 +1,5 @@
 [stimulus]
-ramp_len_ms = 10
+ramp_len = 0.10
 pattern = "aba_"
 tone_len_fraction = 0.41666666666
 repeats = 100
@@ -22,11 +22,10 @@ input_bound = [0.005, 0.1]
 lowpass = 1.5
 lowpass_order = 3
 
-# [rates.freqbound]
-# freq_limits = [400.0, 1200.0]
-
-[rates]
+[rates.freqbound]
 freq_limits = [400.0, 1200.0]
+
+[rates.analyze]
 rates = [2, 4, 8, 16, 32]
 bandonly = true
 

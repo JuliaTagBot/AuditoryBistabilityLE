@@ -22,8 +22,8 @@ end
 
 function freqbound(x;freq_limits=())
   if length(freq_limits) > 0
-    startHz,stopHz = asHz.(freq_limits)
-    y = y[Axis{:freq}(startHz .. stopHz)]
+    startHz,stopHz = SampledSignals.inHz.(freq_limits).*Hz
+    x = x[Axis{:freq}(startHz .. stopHz)]
   end
 end
 
@@ -61,8 +61,8 @@ function bistable_model(spect::ShammaModel.AuditorySpectrogram,params,settings;
 
   # cortical scales
   scalef = scalefilter(;settings.scales.analyze...)
-  cs = filter(scalef, specta)
-  csclean = filter(scalef, spect)
+  cs = filt(scalef, specta)
+  csclean = filt(scalef, spect)
   csat = apply_bistable(cs,:scales,params,progressbar=progressbar,
                         intermediate_results=intermediate_results;
                         settings.scales.bistable...)
@@ -71,9 +71,9 @@ function bistable_model(spect::ShammaModel.AuditorySpectrogram,params,settings;
   # differently from the "normal" rate filters
 
   # cortical rates
-  ratef = ratefilter(;settings.rates...)
+  ratef = ratefilter(;settings.rates.analyze...)
   csa = freqbound(csat.result; settings.rates.freqbound...)
-  crs = filter(ratef, csa)
+  crs = filt(ratef, csa)
 
   # temporal coherence (simultaneous grouping)
   C = cohere(crs, method=:nmf, progressbar=progressbar;
@@ -90,7 +90,7 @@ function bistable_model(spect::ShammaModel.AuditorySpectrogram,params,settings;
   track_lp = track_lp_at.result
 
   # compute the mask for the primary source
-  startHz, stopHz = settings.rates.freq_limits_Hz.*Hz
+  startHz, stopHz = asHz.(settings.rates.freqbound.freq_limits)
   crmask = mask(csclean[:,:,startHz .. stopHz],tracks,track_lp;settings.mask...)
   spmask = filt(inv(scalef),crmask)
 

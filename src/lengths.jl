@@ -29,7 +29,7 @@ function percept_lengths(counts; threshold = 0.45,
   lens,vals = findlengths(Array(counts .< threshold))
   slens = lens * ustrip(uconvert(s,Δt(counts)))
 
-  mergelengths(slens,vals,asseconds(min_length))
+  mergelengths(slens,vals,ustrip(asseconds(min_length)))
 end
 
 function percept_lengths(spmask::AbstractMatrix, sp::AbstractMatrix,

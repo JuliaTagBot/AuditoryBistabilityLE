@@ -1,7 +1,6 @@
 
 using AxisArrays
 
-# TODO: fix unitful values here, so we can accept implicit seconds
 windowing(x,dim=timedim(x);kwds...) = windowing(hastimes(x),x,dim;kwds...)
 map_windowing(fn,x,dim=timedim(x);kwds...) =
   map_windowing(fn,hastimes(x),x,dim;kwds...)
@@ -33,7 +32,7 @@ end
 
 function windowing(::HasTimes,data::AbstractArray,dim;
                    length=nothing,step=nothing,minlength=length)
-  helper(x::Number) = x
+  helper(x::Number) = max(1,floor(Int,x*s / Δt(data)))
   helper(x::Quantity) = max(1,floor(Int,x / Δt(data)))
   length_,step_,minlength_ = helper.((length,step,minlength))
 
