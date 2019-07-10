@@ -48,7 +48,7 @@ function track_weighting(tracks,σ_t,σ_p,σ_N,c)
 end
 
 function freq_weighting(spect,σ,c)
-  f = log.(ustrip.(uconvert.(Hz,freqs(spect))))
+  f = log.(ustrip.(uconvert.(Hz,frequencies(spect))))
   W = @. c*(1 - exp(-(f - f')^2 / (σ*log(2))^2))
 
   x -> W*x
