@@ -81,7 +81,9 @@ end
 
 drift(x,along_axes...;progressbar=true,kw...) =
   drift(x,AdaptMI(;kw...),along_axes,progressbar)
-function drift(x,params::AdaptMI,along_axes=typeof.(AxisArayys.axes(x)),progressbar=true)
+function drift(x,params::AdaptMI,along_axes=typeof.(AxisArayys.axes(x)),
+    progressbar=true)
+
   τ_σ, c_σ = params.τ_σ, log(1+params.c_σ)
   time = Axis{:time}
 
