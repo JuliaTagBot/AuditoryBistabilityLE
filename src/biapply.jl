@@ -47,8 +47,7 @@ function apply_bistable!(x,condition,params;
                          lowpass=1.5,lowpass_order=3,
                          interactive=false,
                          intermediate_results=interactive,
-                         normalize_start_s=-1.0,
-                         normalize_start=normalize_start_s*s,
+                         normalize_start=-1.0s,
                          progressbar=interactive)
 
   if condition == :freqs
@@ -72,7 +71,7 @@ function apply_bistable!(x,condition,params;
     :c_x => params[:c_x], :τ_x => params[:τ_x]
   )
 
-  weights = findweights(condition,x,normalize_start)
+  weights = findweights(condition,x,asseconds(normalize_start))
   weights .= bound.(weights,input_bound...)
   input_weights = copy(weights)
 
