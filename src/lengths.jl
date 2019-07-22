@@ -35,7 +35,7 @@ end
 function percept_lengths(spmask::AbstractMatrix, sp::AbstractMatrix,
                          settings)
   settings = read_settings(settings)
-  startHz, stopHz = settings.rates.freq_limits_Hz.*Hz
+  startHz, stopHz = asHz.(settings.rates.freqbound.freq_limits)
   ratio, = bandwidth_ratio(spmask, sp[:,startHz .. stopHz], settings)
   percept_lengths(ratio, settings)
 end
@@ -47,7 +47,7 @@ end
 
 function percept_lengths(result::NamedTuple,settings)
   settings = read_settings(settings)
-  startHz, stopHz = settings.rates.freq_limits_Hz.*Hz
+  startHz, stopHz = asHz.(settings.rates.freqbound.freq_limits)
   ratio, = bandwidth_ratio(result.primary_source,
                            result.input[:,startHz .. stopHz],
                            settings)
