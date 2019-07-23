@@ -32,7 +32,8 @@ end
 function bandwidth_ratio(spmask::AbstractMatrix, sp::AbstractMatrix,
                          settings)
   settings = read_settings(settings)
-  bandwidth_ratio(spmask, sp; settings.bandwidth_ratio...)
+  startHz, stopHz = asHz.(settings.rates.freqbound.freq_limits)
+  bandwidth_ratio(spmask, sp[:,startHz .. stopHz]; settings.bandwidth_ratio...)
 end
 
 function bandwidth_ratio(spmask, sp; threshold=1.5,
