@@ -1,5 +1,5 @@
 using .RCall
-import ShammaModel: rplot, raster_plot
+# import ShammaModel: rplot, raster_plot
 export rplot, scale_plot, cohere_plot
 
 R"""

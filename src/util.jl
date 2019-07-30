@@ -12,7 +12,7 @@ end
 read_params(x) = x
 
 function read_params(x::DataFrameRow)
-  Dict(k => x[!,k][1] for k in names(x))
+  Dict(k => x[k][1] for k in names(x))
 end
 
 function read_params(x::DataFrame)
@@ -20,7 +20,7 @@ function read_params(x::DataFrame)
   Dict(k => x[!,k][1] for k in names(x))
 end
 
-function checkunits(params,unit,key)
+function checkunits(params::Dict,unit,key)
   try 
     uconvert(unit,params[key]) 
   catch e

@@ -119,7 +119,7 @@ end
 function mask(cr::MetaUnion{AxisArray},
               tracks::AxisArray{<:SourceTracking},
               tracks_lp::AxisArray{<:Float64},
-              order=1;window=500ms,
+              order=1;window=500ms,mask_wait=0,
               delta=250ms,progressbar=false)
 
   @assert axisdim(cr,Axis{:time}) == 1
@@ -130,10 +130,10 @@ function mask(cr::MetaUnion{AxisArray},
   windows = windowing(tracks[1],length=window,step=delta)
 
   progress = progressbar ? Progress(length(windows),"Masking: ") : nothing
-  mask_helper(cr,tracks,tracks_lp,order,windows,progress)
+  mask_helper(cr,tracks,tracks_lp,order,windows,mask_wait,progress)
 end
 
-function mask_helper(cr,tracks,tracks_lp,order,windows,progress)
+function mask_helper(cr,tracks,tracks_lp,order,windows,mask_wait,progress)
   y = zero(cr)
   norm = similar(cr,real(eltype(cr)))
   norm .= zero(eltype(norm))
@@ -148,9 +148,14 @@ function mask_helper(cr,tracks,tracks_lp,order,windows,progress)
     c = sorting[order]
 
     for (ti,t) in enumerate(ixs)
-      resh = reshape(view(components,:,:,c,ti),1,size(y,2),size(y,3))
-      y[cohere_windows[t],:,:] .+= resh
-      norm[cohere_windows[t],:,:] .+= 1
+      if i <= mask_wait
+        y[cohere_windows[t],:,:] .+= 1
+        norm[cohere_windows[t],:,:] .+= 1
+      else
+        resh = reshape(view(components,:,:,c,ti),1,size(y,2),size(y,3))
+        y[cohere_windows[t],:,:] .+= resh
+        norm[cohere_windows[t],:,:] .+= sqrt.(mean(x -> x^2,resh))
+      end
     end
 
     next!(progress)

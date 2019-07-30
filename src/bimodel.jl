@@ -40,8 +40,9 @@ function bistable_model(stim::AbstractVector,params,settings;interactive=false,
                         progressbar=interactive,
                         intermediate_results=interactive)
   settings = read_settings(settings)
+  params = read_params(params)
   as = Audiospect(;settings.freqs.analyze...)
-  spect = filt(as,stim,progressbar=progressbar)
+  spect = filt(as,stim,progressbar)
   bistable_model(spect,params,settings;progressbar=progressbar,
                  intermediate_results=intermediate_results)
 end
@@ -51,6 +52,7 @@ function bistable_model(spect::ShammaModel.AuditorySpectrogram,params,settings;
                         progressbar=interactive,
                         intermediate_results=interactive)
   settings = read_settings(settings)
+  params = read_params(params)
   checkparams(params)
 
   # auditory spectrogram
