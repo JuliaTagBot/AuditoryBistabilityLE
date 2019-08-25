@@ -21,7 +21,7 @@ end
 const Coherence = MetaArray{<:AxisArray,<:CParams}
 const CParamLike = Union{CParams,Coherence}
 
-ShammaModel.Δt(as::CParamLike) = as.delta
+CorticalSpecrtralTemporalResponses.Δt(as::CParamLike) = as.delta
 
 function Base.show(io::IO,::MIME"text/plain",x::Coherence)
   if !get(io, :compact, false)
@@ -38,14 +38,14 @@ components(x::CParams) = 1:ncomponents(x)
 components(x::AbstractArray) = axisvalues(AxisArrays.axes(x,Axis{:component}))[1]
 component(x::AbstractArray,n) = x[Axis{:component}(n)]
 
-ShammaModel.hastimes(x::Coherence) = HasTimes()
+CorticalSpecrtralTemporalResponses.hastimes(x::Coherence) = HasTimes()
 
 function component_means(C)
   mdims = filter(x -> x != axisdim(C,Axis{:component}),1:ndims(C))
   vec(mean(C,dims=mdims))
 end
 
-ShammaModel.frame_length(params::CParams,x) =
+CorticalSpecrtralTemporalResponses.frame_length(params::CParams,x) =
   max(1,floor(Int,params.delta / Δt(x)))
 
 function CParams(x;ncomponents=1,window=1000ms,

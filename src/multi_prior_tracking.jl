@@ -103,7 +103,7 @@ function map_components(fn,tracks::AxisArray{<:SourceTracking},
   AxisArray(result,AxisArrays.axes(windows,Axis{:time}))
 end
 
-function mask(sp::ShammaModel.AuditorySpectrogram,
+function mask(sp::CorticalSpecrtralTemporalResponses.AuditorySpectrogram,
               tracks::AxisArray{<:SourceTracking},
               tracks_lp::AxisArray{<:Float64},
               settings;progressbar=false,kwds...)

@@ -54,7 +54,7 @@ function decompress(x::CompressedMask)
   withaxes(reshape(mask,x.size...), x.axes)
 end
   
-function ShammaModel.audiospect(x::CompressedMask,settings)
+function CorticalSpecrtralTemporalResponses.audiospect(x::CompressedMask,settings)
   settings = read_settings(settings)
   audiospect(decompress(x);settings.freqs.analyze...)
 end

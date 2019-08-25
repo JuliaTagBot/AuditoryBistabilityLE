@@ -1,5 +1,5 @@
 module AuditoryBistabilityLE
-using ShammaModel
+using CorticalSpecrtralTemporalResponses
 using DSP
 using DataFrames
 using Requires
@@ -11,7 +11,7 @@ using TOML
 using MetaArrays
 using Unitful
 
-import ShammaModel: Δt, Δf, times, freqs, scales, rates, asseconds, asHz
+import CorticalSpecrtralTemporalResponses: Δt, Δf, times, freqs, scales, rates, asseconds, asHz
 
 export adaptmi, drift, scale_weighting, ncomponents, nunits, CoherenceModel,
     fusion_ratio, object_SNR, mask, scene_object_ratio,

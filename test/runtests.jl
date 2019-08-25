@@ -1,5 +1,5 @@
 using Test
-using ShammaModel
+using CorticalSpecrtralTemporalResponses
 using AuditoryBistabilityLE
 using SampledSignals
 using TOML

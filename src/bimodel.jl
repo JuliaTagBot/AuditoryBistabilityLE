@@ -47,7 +47,7 @@ function bistable_model(stim::AbstractVector,params,settings;interactive=false,
                  intermediate_results=intermediate_results)
 end
 
-function bistable_model(spect::ShammaModel.AuditorySpectrogram,params,settings;
+function bistable_model(spect::CorticalSpecrtralTemporalResponses.AuditorySpectrogram,params,settings;
                         interactive=false,
                         progressbar=interactive,
                         intermediate_results=interactive)
